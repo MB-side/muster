@@ -1,0 +1,1144 @@
+<meta charset="utf-8">
+<title>Muster — Business Acquisition Screener</title>
+<style>
+  :root{
+    --ink:#14181e; --paper:#eef0e8; --paper-raised:#ffffff; --paper-sunk:#e3e6dc;
+    --brass:#9c5a28; --brass-soft:#c98a4f; --brass-bg:#f1e3d3;
+    --slate:#57616c; --slate-soft:#8a929c; --line:#d5d8cd;
+    --pass:#3f7d55; --pass-bg:#e0ebe3; --warn:#b99424; --warn-bg:#f2e9d2; --fail:#b3483c; --fail-bg:#f3e0dc;
+    --font-display:Georgia,'Iowan Old Style','Palatino Linotype','Book Antiqua',serif;
+    --font-body:-apple-system,'Segoe UI',system-ui,sans-serif;
+    --font-mono:ui-monospace,'SF Mono',Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#eef0e8; --paper:#14171c; --paper-raised:#1c2027; --paper-sunk:#101318;
+      --brass:#d38a4a; --brass-soft:#e6b46e; --brass-bg:#3a2a1a;
+      --slate:#9aa3ad; --slate-soft:#6b7480; --line:#2c313a;
+      --pass:#5fae7a; --pass-bg:#1c2b21; --warn:#d9b84a; --warn-bg:#332a13; --fail:#d97165; --fail-bg:#2e1e1c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eef0e8; --paper:#14171c; --paper-raised:#1c2027; --paper-sunk:#101318;
+    --brass:#d38a4a; --brass-soft:#e6b46e; --brass-bg:#3a2a1a;
+    --slate:#9aa3ad; --slate-soft:#6b7480; --line:#2c313a;
+    --pass:#5fae7a; --pass-bg:#1c2b21; --warn:#d9b84a; --warn-bg:#332a13; --fail:#d97165; --fail-bg:#2e1e1c;
+  }
+  :root[data-theme="light"]{
+    --ink:#14181e; --paper:#eef0e8; --paper-raised:#ffffff; --paper-sunk:#e3e6dc;
+    --brass:#9c5a28; --brass-soft:#c98a4f; --brass-bg:#f1e3d3;
+    --slate:#57616c; --slate-soft:#8a929c; --line:#d5d8cd;
+    --pass:#3f7d55; --pass-bg:#e0ebe3; --warn:#b99424; --warn-bg:#f2e9d2; --fail:#b3483c; --fail-bg:#f3e0dc;
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);line-height:1.45;font-size:15px;}
+  h1,h2,h3{font-family:var(--font-display);font-weight:600;text-wrap:balance;margin:0;}
+  .tnum{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+  button{font:inherit;cursor:pointer;}
+  input,select,textarea{font:inherit;color:inherit;}
+  a{color:var(--brass);}
+
+  .app{max-width:1180px;margin:0 auto;padding:20px 20px 64px;}
+
+  /* header */
+  .topbar{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:18px;margin-bottom:20px;border-bottom:2px solid var(--ink);}
+  .brandblock{display:flex;flex-direction:column;gap:2px;}
+  .brandblock h1{font-size:30px;letter-spacing:0.2px;}
+  .brandblock .tag{color:var(--slate);font-size:13px;max-width:52ch;}
+  .brandmark{display:inline-flex;align-items:center;gap:10px;}
+  .brandmark svg{flex:none;}
+  .topactions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+  .btn{border:1px solid var(--line);background:var(--paper-raised);color:var(--ink);border-radius:7px;padding:8px 14px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:border-color .15s,transform .1s;}
+  .btn:hover{border-color:var(--brass);}
+  .btn:active{transform:translateY(1px);}
+  .btn.primary{background:var(--brass);border-color:var(--brass);color:#fff;}
+  .btn.primary:hover{background:var(--brass-soft);border-color:var(--brass-soft);}
+  .btn.ghost{background:transparent;}
+  .btn.danger{color:var(--fail);border-color:var(--fail);background:transparent;}
+  .btn.danger:hover{background:var(--fail-bg);}
+  .btn.small{padding:5px 10px;font-size:12.5px;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  input[type=file]{display:none;}
+
+  /* layout */
+  .layout{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start;}
+  @media (max-width:860px){.layout{grid-template-columns:1fr;}}
+
+  .panel{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:16px 16px 18px;}
+  .panel + .panel{margin-top:16px;}
+  .panel h2{font-size:15px;letter-spacing:.2px;}
+  .panel .sub{color:var(--slate);font-size:12px;margin-top:2px;}
+  .sidebar{position:sticky;top:20px;}
+
+  .field-row{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
+  .field-row label{font-size:12.5px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.4px;}
+  .field-row input[type=text],.field-row input[type=number]{border:1px solid var(--line);background:var(--paper-sunk);color:var(--ink);border-radius:6px;padding:6px 8px;font-size:13.5px;width:100%;}
+  .field-row input:focus,select:focus,textarea:focus{outline:2px solid var(--brass-soft);outline-offset:1px;}
+
+  .knockout-row{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line);}
+  .knockout-row:first-of-type{border-top:none;padding-top:4px;}
+  .knockout-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .knockout-head .name{font-size:13px;font-weight:600;}
+  .knockout-body{display:flex;gap:8px;flex-wrap:wrap;}
+  .knockout-body input[type=number]{width:100px;}
+  .switch{position:relative;width:34px;height:19px;flex:none;}
+  .switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer;}
+  .switch .track{position:absolute;inset:0;background:var(--line);border-radius:20px;transition:background .15s;}
+  .switch .thumb{position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--paper-raised);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s;}
+  .switch input:checked + .track{background:var(--brass);}
+  .switch input:checked ~ .thumb{transform:translateX(15px);}
+  .state-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:20px;padding:3px 9px 3px 7px;font-size:12px;cursor:pointer;user-select:none;}
+  .state-chip input{margin:0;}
+  .state-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+
+  .weight-row{padding:10px 0;border-top:1px solid var(--line);}
+  .weight-row:first-of-type{border-top:none;padding-top:4px;}
+  .weight-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .weight-head .name{font-size:13px;font-weight:600;}
+  .weight-head .val{font-family:var(--font-mono);font-size:12.5px;color:var(--brass);font-weight:700;min-width:2.4em;text-align:right;}
+  .weight-row .cap{font-size:11.5px;color:var(--slate);margin-top:2px;}
+  input[type=range]{width:100%;margin-top:6px;accent-color:var(--brass);}
+  .target-inline{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--slate);}
+  .target-inline input{width:70px;border:1px solid var(--line);background:var(--paper-sunk);color:var(--ink);border-radius:5px;padding:3px 6px;font-family:var(--font-mono);}
+
+  .weight-total{display:flex;justify-content:space-between;font-size:12px;color:var(--slate);margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+  .weight-total b{color:var(--ink);font-family:var(--font-mono);}
+
+  /* sync banner */
+  .banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;font-size:13px;margin-bottom:16px;border:1px solid var(--line);}
+  .banner.error{background:var(--fail-bg);border-color:var(--fail);color:var(--fail);}
+  .banner.info{background:var(--brass-bg);border-color:var(--brass);color:var(--brass);}
+  .banner button{margin-left:auto;}
+
+  /* toolbar above results */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .search{border:1px solid var(--line);background:var(--paper-raised);border-radius:7px;padding:7px 10px;font-size:13px;min-width:190px;}
+  select.sortsel{border:1px solid var(--line);background:var(--paper-raised);border-radius:7px;padding:7px 10px;font-size:13px;color:var(--ink);}
+  .toggle-label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--slate);}
+  .count-pill{font-size:12px;color:var(--slate);}
+
+  /* listing cards */
+  .listing{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .listing.excluded{opacity:.72;}
+  .listing.delisted{opacity:.55;}
+  .listing-top{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;}
+  .listing-name{font-family:var(--font-display);font-size:18px;font-weight:600;}
+  .listing-name.struck{text-decoration:line-through;text-decoration-color:var(--slate-soft);}
+  .listing-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;}
+  .chip{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--slate);white-space:nowrap;}
+  .chip.fail{color:var(--fail);border-color:var(--fail);background:var(--fail-bg);}
+  .chip.pass{color:var(--pass);border-color:var(--pass);background:var(--pass-bg);}
+  .chip.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg);}
+  .nums{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;}
+  .num{display:flex;flex-direction:column;gap:1px;}
+  .num .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--slate-soft);}
+  .num .v{font-family:var(--font-mono);font-size:14px;font-variant-numeric:tabular-nums;}
+
+  .score-badge{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;border:2px solid var(--line);}
+  .score-badge .n{font-family:var(--font-mono);font-size:19px;font-weight:700;line-height:1;}
+  .score-badge .l{font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:var(--slate);margin-top:2px;}
+  .score-badge.great{border-color:var(--pass);background:var(--pass-bg);} .score-badge.great .n{color:var(--pass);}
+  .score-badge.good{border-color:var(--pass);background:var(--pass-bg);} .score-badge.good .n{color:var(--pass);}
+  .score-badge.fair{border-color:var(--warn);background:var(--warn-bg);} .score-badge.fair .n{color:var(--warn);}
+  .score-badge.weak{border-color:var(--fail);background:var(--fail-bg);} .score-badge.weak .n{color:var(--fail);}
+  .score-badge.poor{border-color:var(--fail);background:var(--fail-bg);} .score-badge.poor .n{color:var(--fail);}
+  .score-badge.none{border-color:var(--line);} .score-badge.none .n{color:var(--slate-soft);}
+
+  .listing-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+  .listing-detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:none;}
+  .listing.open .listing-detail{display:block;}
+  .detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px 18px;}
+  .detail-item .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--slate-soft);}
+  .detail-item .v{font-size:13px;margin-top:2px;}
+  .stars{color:var(--brass);letter-spacing:1px;}
+  .notes-block{margin-top:10px;font-size:13px;color:var(--ink);white-space:pre-wrap;}
+  .notes-block .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--slate-soft);display:block;margin-bottom:3px;}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--slate);border:1px dashed var(--line);border-radius:12px;background:var(--paper-raised);}
+  .empty h2{font-size:19px;color:var(--ink);margin-bottom:8px;}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(10,12,14,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--paper-raised);border-radius:14px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;padding:22px 24px 24px;border:1px solid var(--line);}
+  .modal h2{font-size:19px;}
+  .modal-close{float:right;background:none;border:none;color:var(--slate);font-size:20px;line-height:1;padding:2px;}
+  .modal-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);}
+  .modal-section:first-of-type{border-top:none;padding-top:0;margin-top:14px;}
+  .modal-section h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--slate);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:520px){.grid2{grid-template-columns:1fr;}}
+  .form-row{display:flex;flex-direction:column;gap:5px;margin-top:12px;}
+  .form-row label{font-size:12px;font-weight:600;color:var(--slate);}
+  .form-row input,.form-row select,.form-row textarea{border:1px solid var(--line);background:var(--paper-sunk);color:var(--ink);border-radius:6px;padding:7px 9px;font-size:13.5px;width:100%;}
+  .form-row textarea{resize:vertical;min-height:56px;font-family:var(--font-body);}
+  .starpick{display:flex;gap:4px;}
+  .starpick button{background:none;border:none;font-size:20px;color:var(--line);padding:0;}
+  .starpick button.on{color:var(--brass);}
+  .paste-box textarea{min-height:70px;}
+  .paste-hint{font-size:11.5px;color:var(--slate-soft);margin-top:4px;}
+  .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;align-items:center;}
+  .modal-footer .msg{font-size:12px;color:var(--slate);margin-right:auto;}
+
+  .confirm-modal{max-width:380px;}
+
+  .footnote{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);color:var(--slate);font-size:12.5px;max-width:70ch;}
+  .footnote b{color:var(--ink);}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+</style>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brandblock">
+      <div class="brandmark">
+        <svg width="30" height="30" viewBox="0 0 30 30" role="img" aria-label="Muster mark">
+          <circle cx="15" cy="15" r="13.5" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+          <path d="M9 17.5 L13 10.5 L15.5 15 L18 9.5 L21.5 17.5" fill="none" stroke="var(--brass)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"></path>
+        </svg>
+        <h1>Muster</h1>
+      </div>
+      <div class="tag">Gather businesses for sale, screen them against your criteria, and rank what's left.</div>
+    </div>
+    <div class="topactions">
+      <button class="btn ghost small" id="btnRefresh">⟳ Refresh</button>
+      <button class="btn ghost small" id="btnExportCsv">Export CSV</button>
+      <button class="btn small" id="btnExportJson">Export JSON</button>
+      <button class="btn small" id="btnImportJson">Import JSON</button>
+      <input type="file" id="fileImport" accept="application/json">
+      <button class="btn primary" id="btnAdd">+ Add listing</button>
+    </div>
+  </div>
+
+  <div id="bannerHost"></div>
+
+  <div class="layout">
+    <div class="sidebar">
+
+      <div class="panel">
+        <h2>Hard filters</h2>
+        <div class="sub">Fails here get flagged as excluded and hidden by default. Toggle a filter on to enforce it. These are personal to your browser — your friend sets their own.</div>
+        <div id="knockoutList"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Scoring weights</h2>
+        <div class="sub">0 = ignored entirely. Higher = counts for more of the aggregate score. Personal to your browser.</div>
+        <div id="weightList"></div>
+        <div class="weight-total">Active weight total <b id="weightTotal">0</b></div>
+        <div style="margin-top:12px;"><button class="btn ghost small" id="btnResetWeights">Reset to defaults</button></div>
+      </div>
+
+    </div>
+
+    <div class="main">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="search" id="search" type="text" placeholder="Search name, industry, location…">
+          <select class="sortsel" id="sortSel">
+            <option value="score">Sort: Score, high to low</option>
+            <option value="price-asc">Sort: Price, low to high</option>
+            <option value="price-desc">Sort: Price, high to low</option>
+            <option value="multiple">Sort: Price multiple, low to high</option>
+            <option value="profit">Sort: Net profit, high to low</option>
+            <option value="date">Sort: Recently added</option>
+          </select>
+          <label class="toggle-label"><input type="checkbox" id="hideExcluded" checked> Hide excluded</label>
+          <label class="toggle-label"><input type="checkbox" id="hideDelisted" checked> Hide delisted</label>
+        </div>
+        <div class="count-pill" id="countPill"></div>
+      </div>
+
+      <div id="listings"></div>
+      <div class="empty" id="emptyState" style="display:none;">
+        <h2 id="emptyTitle">No listings yet</h2>
+        <div id="emptyBody">Add one manually, or paste text copied from a listing page and Muster will try to pre-fill the fields.</div>
+        <div style="margin-top:14px;"><button class="btn primary" id="btnAddEmpty">+ Add your first listing</button></div>
+      </div>
+
+      <div class="footnote">
+        <b>How this works now:</b> listings live in a shared database (a Google Sheet behind the scenes) — anyone with this page's link and the backend configured sees the same data. Hit <b>Refresh</b> to pull in anything your friend has added. Your <b>hard filters and scoring weights stay personal</b> to your browser, so you can each judge the same listings differently. <b>Export/Import JSON</b> back up or bulk-load data; <b>Export CSV</b> is a read-only copy for a spreadsheet.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modalInner"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ===== Backend configuration =====
+  // Paste your deployed Apps Script web app URL here after setup (see SETUP.md).
+  // It looks like: https://script.google.com/macros/s/XXXXXXXX/exec
+  var BACKEND_URL = "https://script.google.com/macros/s/AKfycbyTNhEeFgHnFS5W7gdlECt_nNe3wFzdIqRGlo_4YByUYPWcHbC9fJnCoSLmEZQUVyhcJw/exec";
+
+  var SETTINGS_KEY = "muster_settings_v1";
+  var STATES = ["NSW","VIC","QLD","WA","SA","TAS","ACT","NT"];
+
+  var CRITERIA = [
+    {key:"priceMultiple", name:"Price multiple", cap:"multiple that scores 50/100 — cheaper scores higher", weightDefault:8, targetKey:"maxGoodMultiple", targetDefault:4, targetSuffix:"x", manual:false},
+    {key:"profitMargin", name:"Profit margin", cap:"margin % that scores 100", weightDefault:7, targetKey:"maxGoodMargin", targetDefault:35, targetSuffix:"%", manual:false},
+    {key:"ownerHours", name:"Owner hours / week", cap:"hours that scores 0 (full-time owner-operator)", weightDefault:6, targetKey:"maxFullTimeHours", targetDefault:50, targetSuffix:"h", manual:false},
+    {key:"yearsEstablished", name:"Years established", cap:"years that scores 100", weightDefault:4, targetKey:"capYears", targetDefault:15, targetSuffix:"y", manual:false},
+    {key:"recurringRevenue", name:"Recurring revenue %", cap:"used directly as the score", weightDefault:6, manual:false},
+    {key:"growthPotential", name:"Growth potential", cap:"your 1–5 rating on the listing", weightDefault:7, manual:true, field:"growthPotentialRating"},
+    {key:"reasonForSale", name:"Reason for sale", cap:"your 1–5 rating — genuine vs. distressed", weightDefault:5, manual:true, field:"reasonForSaleRating"},
+    {key:"customerConcentration", name:"Customer diversity", cap:"your 1–5 rating — 5 = well spread, low risk", weightDefault:6, manual:true, field:"customerConcentrationRating"},
+    {key:"industryOutlook", name:"Industry outlook", cap:"your 1–5 rating on sector risk/disruption", weightDefault:5, manual:true, field:"industryOutlookRating"},
+    {key:"assetValue", name:"Assets & inventory", cap:"your 1–5 rating on value included in the sale", weightDefault:3, manual:true, field:"assetValueRating"},
+    {key:"staffRisk", name:"Team / key-person risk", cap:"your 1–5 rating — 5 = resilient without the owner", weightDefault:5, manual:true, field:"staffRiskRating"}
+  ];
+
+  function defaultSettings(){
+    var weights = {}; var targets = {};
+    CRITERIA.forEach(function(c){
+      weights[c.key] = c.weightDefault;
+      if(c.targetKey) targets[c.targetKey] = c.targetDefault;
+    });
+    return {
+      knockouts:{
+        maxPrice:{enabled:false, value:null},
+        minRevenue:{enabled:false, value:null},
+        minProfit:{enabled:false, value:null},
+        maxMultiple:{enabled:false, value:null},
+        states:{enabled:false, allowed:[]},
+        industry:{enabled:false, value:""}
+      },
+      weights: weights,
+      targets: targets
+    };
+  }
+
+  function loadSettings(){
+    try{
+      var raw = localStorage.getItem(SETTINGS_KEY);
+      var parsed = raw ? JSON.parse(raw) : {};
+      var d = defaultSettings();
+      parsed.knockouts = Object.assign(d.knockouts, parsed.knockouts||{});
+      parsed.weights = Object.assign(d.weights, parsed.weights||{});
+      parsed.targets = Object.assign(d.targets, parsed.targets||{});
+      return parsed;
+    }catch(e){ return defaultSettings(); }
+  }
+
+  var state = {
+    listings: [],
+    settings: loadSettings(),
+    ui: {hideExcluded:true, hideDelisted:true, sort:"score", search:""},
+    loading: true,
+    backendError: null
+  };
+
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+  }
+
+  function uid(){ return "l_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+  function num(v){ return (v===null || v===undefined || v==="" || isNaN(v)) ? null : Number(v); }
+  function fmtMoney(n){ if(n===null||n===undefined) return "—"; return "$" + Math.round(n).toLocaleString("en-AU"); }
+  function fmtNum(n,suffix){ if(n===null||n===undefined) return "—"; return (Math.round(n*10)/10) + (suffix||""); }
+
+  // ===== Backend I/O =====
+
+  function backendConfigured(){ return !!BACKEND_URL; }
+
+  function fetchListings(){
+    if(!backendConfigured()){
+      state.loading = false;
+      state.backendError = "not-configured";
+      renderAll();
+      return Promise.resolve();
+    }
+    state.loading = true;
+    state.backendError = null;
+    renderBanner();
+    return fetch(BACKEND_URL, {method:"GET"})
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if(!data.ok) throw new Error(data.error || "backend returned an error");
+        state.listings = (data.listings || []).map(normalizeListing);
+        state.loading = false;
+        renderAll();
+      })
+      .catch(function(err){
+        state.loading = false;
+        state.backendError = String(err.message || err);
+        renderAll();
+      });
+  }
+
+  function postAction(payload){
+    if(!backendConfigured()) return Promise.reject(new Error("Backend not configured yet"));
+    return fetch(BACKEND_URL, {method:"POST", body: JSON.stringify(payload)})
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if(!data.ok) throw new Error(data.error || "backend rejected the request");
+        return data;
+      });
+  }
+
+  function normalizeListing(raw){
+    var l = Object.assign({}, raw);
+    ["askingPrice","annualRevenue","netProfit","yearsEstablished","ownerHours","staffCount",
+     "recurringRevenuePct","reasonForSaleRating","growthPotentialRating","customerConcentrationRating",
+     "industryOutlookRating","assetValueRating","staffRiskRating"].forEach(function(k){
+      l[k] = num(l[k]);
+    });
+    l.status = l.status || "active";
+    return l;
+  }
+
+  function multiple(l){
+    var p = num(l.askingPrice), np = num(l.netProfit);
+    if(p===null || np===null || np<=0) return null;
+    return p/np;
+  }
+  function margin(l){
+    var r = num(l.annualRevenue), np = num(l.netProfit);
+    if(r===null || np===null || r<=0) return null;
+    return (np/r)*100;
+  }
+
+  function evalKnockouts(l, settings){
+    var k = settings.knockouts;
+    var reasons = [];
+    var price = num(l.askingPrice), rev = num(l.annualRevenue), profit = num(l.netProfit), mult = multiple(l);
+
+    if(k.maxPrice.enabled && k.maxPrice.value!=null && price!=null && price > k.maxPrice.value)
+      reasons.push("Over budget (" + fmtMoney(price) + ")");
+    if(k.minRevenue.enabled && k.minRevenue.value!=null && rev!=null && rev < k.minRevenue.value)
+      reasons.push("Revenue below minimum");
+    if(k.minProfit.enabled && k.minProfit.value!=null && profit!=null && profit < k.minProfit.value)
+      reasons.push("Profit below minimum");
+    if(k.maxMultiple.enabled && k.maxMultiple.value!=null && mult!=null && mult > k.maxMultiple.value)
+      reasons.push("Price multiple too high (" + fmtNum(mult,"x") + ")");
+    if(k.states.enabled && k.states.allowed && k.states.allowed.length && l.state && k.states.allowed.indexOf(l.state)===-1)
+      reasons.push("Outside target states");
+    if(k.industry.enabled && k.industry.value && k.industry.value.trim() && l.industry){
+      var terms = k.industry.value.split(",").map(function(t){return t.trim().toLowerCase();}).filter(Boolean);
+      var hit = terms.some(function(t){ return l.industry.toLowerCase().indexOf(t) !== -1; });
+      if(terms.length && !hit) reasons.push("Industry doesn't match filter");
+    }
+    return reasons;
+  }
+
+  function subscores(l, settings){
+    var t = settings.targets;
+    var out = {};
+    var mult = multiple(l), marg = margin(l);
+
+    out.priceMultiple = mult===null ? null : clamp(100 - (mult / t.maxGoodMultiple) * 50, 0, 100);
+    out.profitMargin = marg===null ? null : clamp((marg / t.maxGoodMargin) * 100, 0, 100);
+    out.ownerHours = num(l.ownerHours)===null ? null : clamp(100 - (num(l.ownerHours) / t.maxFullTimeHours) * 100, 0, 100);
+    out.yearsEstablished = num(l.yearsEstablished)===null ? null : clamp((num(l.yearsEstablished) / t.capYears) * 100, 0, 100);
+    out.recurringRevenue = num(l.recurringRevenuePct)===null ? null : clamp(num(l.recurringRevenuePct), 0, 100);
+
+    CRITERIA.filter(function(c){return c.manual;}).forEach(function(c){
+      var r = num(l[c.field]);
+      out[c.key] = r===null ? null : clamp((r-1)/4*100, 0, 100);
+    });
+    return out;
+  }
+
+  function aggregate(l, settings){
+    var subs = subscores(l, settings);
+    var wsum = 0, ssum = 0;
+    CRITERIA.forEach(function(c){
+      var w = settings.weights[c.key] || 0;
+      var s = subs[c.key];
+      if(w > 0 && s !== null){ wsum += w; ssum += w*s; }
+    });
+    if(wsum === 0) return null;
+    return ssum / wsum;
+  }
+
+  function band(score){
+    if(score===null) return "none";
+    if(score>=75) return "great";
+    if(score>=55) return "good";
+    if(score>=35) return "fair";
+    if(score>=15) return "weak";
+    return "poor";
+  }
+  var bandLabel = {great:"Great", good:"Good", fair:"Fair", weak:"Weak", poor:"Poor", none:"—"};
+
+  // ---------- banner ----------
+
+  function renderBanner(){
+    var host = document.getElementById("bannerHost");
+    host.innerHTML = "";
+    if(!backendConfigured()){
+      host.innerHTML = '<div class="banner info">This copy has no backend configured yet — listings won’t be shared until BACKEND_URL is set in index.html. See SETUP.md.</div>';
+      return;
+    }
+    if(state.loading){
+      host.innerHTML = '<div class="banner info">Loading listings…</div>';
+      return;
+    }
+    if(state.backendError){
+      host.innerHTML = '<div class="banner error">Could not reach the shared database (' + escapeHtml(state.backendError) + '). <button class="btn small" id="bannerRetry">Retry</button></div>';
+      var retry = document.getElementById("bannerRetry");
+      if(retry) retry.addEventListener("click", fetchListings);
+    }
+  }
+
+  // ---------- knockout / weight panel rendering ----------
+
+  var KNOCKOUT_DEFS = [
+    {key:"maxPrice", label:"Maximum asking price", type:"money"},
+    {key:"minRevenue", label:"Minimum annual revenue", type:"money"},
+    {key:"minProfit", label:"Minimum net profit", type:"money"},
+    {key:"maxMultiple", label:"Maximum price multiple", type:"multiple"},
+    {key:"states", label:"Target states", type:"states"},
+    {key:"industry", label:"Industry contains", type:"text"}
+  ];
+
+  function renderKnockouts(){
+    var el = document.getElementById("knockoutList");
+    el.innerHTML = "";
+    KNOCKOUT_DEFS.forEach(function(def){
+      var k = state.settings.knockouts[def.key];
+      var row = document.createElement("div");
+      row.className = "knockout-row";
+
+      var head = document.createElement("div");
+      head.className = "knockout-head";
+      head.innerHTML = '<span class="name">'+def.label+'</span>';
+      var sw = document.createElement("label");
+      sw.className = "switch";
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = !!k.enabled;
+      cb.addEventListener("change", function(){ k.enabled = cb.checked; saveSettings(); renderListings(); });
+      sw.appendChild(cb);
+      var track = document.createElement("span"); track.className="track"; sw.appendChild(track);
+      var thumb = document.createElement("span"); thumb.className="thumb"; sw.appendChild(thumb);
+      head.appendChild(sw);
+      row.appendChild(head);
+
+      var body = document.createElement("div");
+      body.className = "knockout-body";
+
+      if(def.type==="money" || def.type==="multiple"){
+        var inp = document.createElement("input");
+        inp.type = "number"; inp.min="0"; inp.placeholder = def.type==="multiple" ? "e.g. 4" : "e.g. 500000";
+        inp.value = k.value===null||k.value===undefined ? "" : k.value;
+        inp.addEventListener("input", function(){ k.value = num(inp.value); saveSettings(); renderListings(); });
+        body.appendChild(inp);
+      } else if(def.type==="text"){
+        var ti = document.createElement("input");
+        ti.type = "text"; ti.placeholder = "e.g. cafe, retail";
+        ti.value = k.value || "";
+        ti.addEventListener("input", function(){ k.value = ti.value; saveSettings(); renderListings(); });
+        body.appendChild(ti);
+      } else if(def.type==="states"){
+        var wrap = document.createElement("div");
+        wrap.className = "state-chips";
+        STATES.forEach(function(s){
+          var chip = document.createElement("label");
+          chip.className = "state-chip";
+          var scb = document.createElement("input");
+          scb.type = "checkbox";
+          scb.checked = k.allowed.indexOf(s) !== -1;
+          scb.addEventListener("change", function(){
+            var i = k.allowed.indexOf(s);
+            if(scb.checked && i===-1) k.allowed.push(s);
+            if(!scb.checked && i!==-1) k.allowed.splice(i,1);
+            saveSettings(); renderListings();
+          });
+          chip.appendChild(scb);
+          chip.appendChild(document.createTextNode(s));
+          wrap.appendChild(chip);
+        });
+        body.appendChild(wrap);
+      }
+      row.appendChild(body);
+      el.appendChild(row);
+    });
+  }
+
+  function renderWeights(){
+    var el = document.getElementById("weightList");
+    el.innerHTML = "";
+    CRITERIA.forEach(function(c){
+      var row = document.createElement("div");
+      row.className = "weight-row";
+      var head = document.createElement("div");
+      head.className = "weight-head";
+      head.innerHTML = '<span class="name">'+c.name+'</span><span class="val" id="wv_'+c.key+'">'+state.settings.weights[c.key]+'</span>';
+      row.appendChild(head);
+
+      var cap = document.createElement("div");
+      cap.className = "cap";
+      cap.textContent = c.cap;
+      row.appendChild(cap);
+
+      var range = document.createElement("input");
+      range.type = "range"; range.min="0"; range.max="10"; range.step="1";
+      range.value = state.settings.weights[c.key];
+      range.addEventListener("input", function(){
+        state.settings.weights[c.key] = Number(range.value);
+        document.getElementById("wv_"+c.key).textContent = range.value;
+        updateWeightTotal();
+        saveSettings(); renderListings();
+      });
+      row.appendChild(range);
+
+      if(c.targetKey){
+        var ti = document.createElement("div");
+        ti.className = "target-inline";
+        var inp = document.createElement("input");
+        inp.type = "number"; inp.value = state.settings.targets[c.targetKey];
+        inp.addEventListener("input", function(){
+          var v = num(inp.value);
+          if(v!==null){ state.settings.targets[c.targetKey] = v; saveSettings(); renderListings(); }
+        });
+        ti.appendChild(document.createTextNode("Target "));
+        ti.appendChild(inp);
+        ti.appendChild(document.createTextNode(c.targetSuffix||""));
+        row.appendChild(ti);
+      }
+      el.appendChild(row);
+    });
+    updateWeightTotal();
+  }
+
+  function updateWeightTotal(){
+    var total = CRITERIA.reduce(function(s,c){ return s + (state.settings.weights[c.key]||0); }, 0);
+    document.getElementById("weightTotal").textContent = total;
+  }
+
+  document.getElementById("btnResetWeights").addEventListener("click", function(){
+    var d = defaultSettings();
+    state.settings.weights = d.weights;
+    state.settings.targets = d.targets;
+    saveSettings(); renderWeights(); renderListings();
+  });
+
+  // ---------- listings rendering ----------
+
+  function filteredSorted(){
+    var q = state.ui.search.trim().toLowerCase();
+    var list = state.listings.filter(function(l){
+      if(!q) return true;
+      return [l.name,l.industry,l.state,l.suburb].join(" ").toLowerCase().indexOf(q) !== -1;
+    });
+    list = list.map(function(l){
+      var reasons = evalKnockouts(l, state.settings);
+      var score = aggregate(l, state.settings);
+      return {l:l, reasons:reasons, excluded:reasons.length>0, score:score, delisted: l.status==="delisted"};
+    });
+    if(state.ui.hideExcluded) list = list.filter(function(x){ return !x.excluded; });
+    if(state.ui.hideDelisted) list = list.filter(function(x){ return !x.delisted; });
+
+    var sort = state.ui.sort;
+    list.sort(function(a,b){
+      if(sort==="score"){ return (b.score===null?-1:b.score) - (a.score===null?-1:a.score); }
+      if(sort==="price-asc"){ return (num(a.l.askingPrice)===null?Infinity:num(a.l.askingPrice)) - (num(b.l.askingPrice)===null?Infinity:num(b.l.askingPrice)); }
+      if(sort==="price-desc"){ return (num(b.l.askingPrice)===null?-1:num(b.l.askingPrice)) - (num(a.l.askingPrice)===null?-1:num(a.l.askingPrice)); }
+      if(sort==="multiple"){ var ma=multiple(a.l), mb=multiple(b.l); return (ma===null?Infinity:ma)-(mb===null?Infinity:mb); }
+      if(sort==="profit"){ return (num(b.l.netProfit)===null?-1:num(b.l.netProfit)) - (num(a.l.netProfit)===null?-1:num(a.l.netProfit)); }
+      if(sort==="date"){ return (b.l.dateAdded||"").localeCompare(a.l.dateAdded||""); }
+      return 0;
+    });
+    return list;
+  }
+
+  function starString(rating){
+    if(!rating) return "unrated";
+    var s = "";
+    for(var i=1;i<=5;i++) s += i<=rating ? "★" : "☆";
+    return s;
+  }
+
+  function renderAll(){
+    renderBanner();
+    renderListings();
+  }
+
+  function renderListings(){
+    var items = filteredSorted();
+    var wrap = document.getElementById("listings");
+    wrap.innerHTML = "";
+
+    var noBackend = !backendConfigured();
+    var isEmpty = !state.loading && !state.backendError && state.listings.length===0;
+    document.getElementById("emptyState").style.display = (isEmpty || noBackend) ? "block" : "none";
+    if(noBackend){
+      document.getElementById("emptyTitle").textContent = "Backend not connected";
+      document.getElementById("emptyBody").textContent = "Follow SETUP.md to deploy the Apps Script backend, then paste its URL into BACKEND_URL near the top of index.html.";
+    } else if(isEmpty){
+      document.getElementById("emptyTitle").textContent = "No listings yet";
+      document.getElementById("emptyBody").textContent = "Add one manually, or paste text copied from a listing page and Muster will try to pre-fill the fields.";
+    }
+
+    var totalCount = state.listings.length;
+    var allEval = state.listings.map(function(l){ return evalKnockouts(l, state.settings).length>0; });
+    var exCount = allEval.filter(Boolean).length;
+    var delistedCount = state.listings.filter(function(l){ return l.status==="delisted"; }).length;
+    document.getElementById("countPill").textContent = totalCount===0 ? "" :
+      (items.length + " shown · " + totalCount + " total" + (exCount ? " · " + exCount + " excluded" : "") + (delistedCount ? " · " + delistedCount + " delisted" : ""));
+
+    items.forEach(function(item){
+      wrap.appendChild(renderListingCard(item));
+    });
+  }
+
+  function renderListingCard(item){
+    var l = item.l;
+    var card = document.createElement("div");
+    card.className = "listing" + (item.excluded ? " excluded" : "") + (item.delisted ? " delisted" : "");
+    card.dataset.id = l.id;
+
+    var top = document.createElement("div");
+    top.className = "listing-top";
+
+    var left = document.createElement("div");
+    var nameRow = document.createElement("div");
+    nameRow.className = "listing-name" + (item.delisted ? " struck" : "");
+    nameRow.textContent = l.name || "(untitled listing)";
+    left.appendChild(nameRow);
+
+    var meta = document.createElement("div");
+    meta.className = "listing-meta";
+    if(l.industry) meta.appendChild(chipEl(l.industry));
+    if(l.state) meta.appendChild(chipEl(l.state + (l.suburb ? " · " + l.suburb : "")));
+    if(item.delisted) meta.appendChild(chipEl("Delisted", "warn"));
+    if(l.addedBy) meta.appendChild(chipEl("Added by " + l.addedBy));
+    if(item.excluded){
+      item.reasons.forEach(function(r){ meta.appendChild(chipEl(r, "fail")); });
+    } else if(hasAnyKnockoutEnabled()){
+      meta.appendChild(chipEl("Passes filters", "pass"));
+    }
+    left.appendChild(meta);
+
+    var nums = document.createElement("div");
+    nums.className = "nums";
+    nums.appendChild(numEl("Asking", fmtMoney(num(l.askingPrice))));
+    nums.appendChild(numEl("Revenue", fmtMoney(num(l.annualRevenue))));
+    nums.appendChild(numEl("Net profit", fmtMoney(num(l.netProfit))));
+    nums.appendChild(numEl("Multiple", multiple(l)===null ? "—" : fmtNum(multiple(l),"x")));
+    left.appendChild(nums);
+
+    top.appendChild(left);
+
+    var badge = document.createElement("div");
+    badge.className = "score-badge " + band(item.score);
+    var scoreText = item.score===null ? "—" : Math.round(item.score);
+    badge.innerHTML = '<div class="n">'+scoreText+'</div><div class="l">'+bandLabel[band(item.score)]+'</div>';
+    top.appendChild(badge);
+
+    card.appendChild(top);
+
+    var actions = document.createElement("div");
+    actions.className = "listing-actions";
+    var btnDetail = mkBtn("Details", "small ghost", function(){ card.classList.toggle("open"); btnDetail.textContent = card.classList.contains("open") ? "Hide details" : "Details"; });
+    var btnEdit = mkBtn("Edit", "small ghost", function(){ openListingModal(l.id); });
+    var btnStatus = mkBtn(item.delisted ? "Mark active" : "Mark delisted", "small ghost", function(){ toggleDelisted(l, !item.delisted); });
+    var btnDel = mkBtn("Delete", "small danger", function(){ confirmDelete(l.id, l.name); });
+    actions.appendChild(btnDetail); actions.appendChild(btnEdit); actions.appendChild(btnStatus); actions.appendChild(btnDel);
+    card.appendChild(actions);
+
+    var detail = document.createElement("div");
+    detail.className = "listing-detail";
+    var grid = document.createElement("div");
+    grid.className = "detail-grid";
+    grid.appendChild(detailEl("Years established", l.yearsEstablished ? l.yearsEstablished + " yrs" : "—"));
+    grid.appendChild(detailEl("Owner hours / wk", l.ownerHours ? l.ownerHours + " h" : "—"));
+    grid.appendChild(detailEl("Staff", l.staffCount ? l.staffCount : "—"));
+    grid.appendChild(detailEl("Recurring revenue", l.recurringRevenuePct ? l.recurringRevenuePct + "%" : "—"));
+    grid.appendChild(detailEl("Vendor finance", l.vendorFinance || "—"));
+    grid.appendChild(detailEl("Reason for sale", (l.reasonForSale||"—") + (l.reasonForSaleRating ? "  ("+starString(l.reasonForSaleRating)+")" : "")));
+    grid.appendChild(detailEl("Growth potential", starString(l.growthPotentialRating)));
+    grid.appendChild(detailEl("Customer diversity", starString(l.customerConcentrationRating)));
+    grid.appendChild(detailEl("Industry outlook", starString(l.industryOutlookRating)));
+    grid.appendChild(detailEl("Assets & inventory", starString(l.assetValueRating)));
+    grid.appendChild(detailEl("Team / key-person risk", starString(l.staffRiskRating)));
+    if(l.url) grid.appendChild(detailEl("Source", '<a href="'+escapeAttr(l.url)+'" target="_blank" rel="noopener">'+escapeHtml(l.url)+'</a>', true));
+    grid.appendChild(detailEl("Added", (l.addedBy?l.addedBy+", ":"") + (l.dateAdded||"").slice(0,10)));
+    if(l.lastChecked) grid.appendChild(detailEl("Status last checked", String(l.lastChecked).slice(0,10)));
+    detail.appendChild(grid);
+
+    if(l.leaseNotes){ detail.appendChild(notesEl("Lease / premises", l.leaseNotes)); }
+    if(l.assetsNotes){ detail.appendChild(notesEl("Assets detail", l.assetsNotes)); }
+    if(l.notes){ detail.appendChild(notesEl("Notes", l.notes)); }
+
+    card.appendChild(detail);
+    return card;
+  }
+
+  function toggleDelisted(l, delisted){
+    var newStatus = delisted ? "delisted" : "active";
+    postAction({action:"setStatus", id:l.id, status:newStatus})
+      .then(function(){ return fetchListings(); })
+      .catch(function(err){ alert("Could not update status: " + err.message); });
+  }
+
+  function hasAnyKnockoutEnabled(){
+    var k = state.settings.knockouts;
+    return Object.keys(k).some(function(key){ return k[key].enabled; });
+  }
+
+  function chipEl(text, cls){ var s=document.createElement("span"); s.className="chip"+(cls?" "+cls:""); s.textContent=text; return s; }
+  function numEl(k,v){ var d=document.createElement("div"); d.className="num"; d.innerHTML='<span class="k">'+k+'</span><span class="v tnum">'+v+'</span>'; return d; }
+  function detailEl(k,v,html){ var d=document.createElement("div"); d.className="detail-item"; d.innerHTML='<div class="k">'+k+'</div><div class="v">'+(html?v:escapeHtml(String(v)))+'</div>'; return d; }
+  function notesEl(k,v){ var d=document.createElement("div"); d.className="notes-block"; d.innerHTML='<span class="k">'+k+'</span>'+escapeHtml(v); return d; }
+  function mkBtn(text, cls, onclick){ var b=document.createElement("button"); b.className="btn "+cls; b.textContent=text; b.addEventListener("click", onclick); return b; }
+  function escapeHtml(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+  function escapeAttr(s){ return String(s).replace(/"/g,"&quot;"); }
+
+  // ---------- toolbar wiring ----------
+
+  document.getElementById("search").addEventListener("input", function(e){ state.ui.search = e.target.value; renderListings(); });
+  document.getElementById("sortSel").value = state.ui.sort;
+  document.getElementById("sortSel").addEventListener("change", function(e){ state.ui.sort = e.target.value; renderListings(); });
+  document.getElementById("hideExcluded").checked = state.ui.hideExcluded;
+  document.getElementById("hideExcluded").addEventListener("change", function(e){ state.ui.hideExcluded = e.target.checked; renderListings(); });
+  document.getElementById("hideDelisted").checked = state.ui.hideDelisted;
+  document.getElementById("hideDelisted").addEventListener("change", function(e){ state.ui.hideDelisted = e.target.checked; renderListings(); });
+  document.getElementById("btnRefresh").addEventListener("click", fetchListings);
+
+  // ---------- add / edit modal ----------
+
+  function emptyListing(){
+    return {
+      id: uid(), name:"", url:"", addedBy: localStorage.getItem("muster_user")||"", dateAdded: new Date().toISOString(),
+      industry:"", state:"", suburb:"",
+      askingPrice:null, annualRevenue:null, netProfit:null, yearsEstablished:null, ownerHours:null,
+      reasonForSale:"", reasonForSaleRating:null, staffCount:null, staffRiskRating:null,
+      leaseNotes:"", assetsNotes:"", assetValueRating:null, customerConcentrationRating:null,
+      recurringRevenuePct:null, growthPotentialRating:null, industryOutlookRating:null,
+      vendorFinance:"", notes:"", status:"active", lastChecked:""
+    };
+  }
+
+  var editingId = null;
+
+  function openListingModal(id){
+    editingId = id || null;
+    var l = id ? state.listings.find(function(x){return x.id===id;}) : emptyListing();
+    var modal = document.getElementById("modalInner");
+    modal.className = "modal";
+    modal.innerHTML = modalTemplate(l, !id);
+    document.getElementById("overlay").classList.add("show");
+    wireModal(l);
+  }
+
+  function closeModal(){ document.getElementById("overlay").classList.remove("show"); }
+  document.getElementById("overlay").addEventListener("click", function(e){ if(e.target.id==="overlay") closeModal(); });
+
+  function starPickerHtml(field, current){
+    var html = '<div class="starpick" data-field="'+field+'">';
+    for(var i=1;i<=5;i++){ html += '<button type="button" data-val="'+i+'" class="'+(current>=i?"on":"")+'">★</button>'; }
+    html += '<button type="button" data-val="0" style="font-size:11px;color:var(--slate);margin-left:6px;">clear</button></div>';
+    return html;
+  }
+
+  function modalTemplate(l, isNew){
+    return ''+
+    '<button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>'+
+    '<h2>'+(isNew?"Add listing":"Edit listing")+'</h2>'+
+    (isNew ? '<div class="modal-section paste-box"><h3>Paste from listing (optional)</h3>'+
+      '<textarea id="pasteArea" placeholder="Paste the copied text of a listing here (title, price, revenue, profit, location, hours, etc.) and Muster will try to guess the fields below."></textarea>'+
+      '<div class="paste-hint">Muster cannot fetch a URL itself — copy the listing text from the page and paste it here. It is a best-effort guess; check every field afterwards.</div>'+
+      '<div style="margin-top:8px;"><button class="btn small" id="btnParsePaste" type="button">Try to auto-fill from paste</button></div>'+
+      '</div>' : '')+
+    '<div class="modal-section"><h3>Basics</h3>'+
+      '<div class="form-row"><label>Business name</label><input id="f_name" type="text" value="'+escapeAttr(l.name)+'"></div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Industry / type</label><input id="f_industry" type="text" value="'+escapeAttr(l.industry)+'" placeholder="e.g. Cafe, e-commerce"></div>'+
+        '<div class="form-row"><label>Source URL</label><input id="f_url" type="text" value="'+escapeAttr(l.url)+'" placeholder="listing link"></div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>State</label><select id="f_state">'+
+          '<option value=""'+(l.state?"":" selected")+'>—</option>'+
+          STATES.map(function(s){return '<option value="'+s+'"'+(l.state===s?" selected":"")+'>'+s+'</option>';}).join("")+
+        '</select></div>'+
+        '<div class="form-row"><label>Suburb / region</label><input id="f_suburb" type="text" value="'+escapeAttr(l.suburb)+'"></div>'+
+      '</div>'+
+      '<div class="form-row"><label>Added by</label><input id="f_addedBy" type="text" value="'+escapeAttr(l.addedBy)+'" placeholder="your name"></div>'+
+    '</div>'+
+    '<div class="modal-section"><h3>Financials</h3>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Asking price (AUD)</label><input id="f_price" type="number" value="'+(l.askingPrice==null?"":l.askingPrice)+'"></div>'+
+        '<div class="form-row"><label>Annual revenue (AUD)</label><input id="f_revenue" type="number" value="'+(l.annualRevenue==null?"":l.annualRevenue)+'"></div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Net profit / SDE (AUD)</label><input id="f_profit" type="number" value="'+(l.netProfit==null?"":l.netProfit)+'"></div>'+
+        '<div class="form-row"><label>Recurring revenue (%)</label><input id="f_recurring" type="number" min="0" max="100" value="'+(l.recurringRevenuePct==null?"":l.recurringRevenuePct)+'"></div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Years established</label><input id="f_years" type="number" min="0" value="'+(l.yearsEstablished==null?"":l.yearsEstablished)+'"></div>'+
+        '<div class="form-row"><label>Owner hours / week</label><input id="f_hours" type="number" min="0" value="'+(l.ownerHours==null?"":l.ownerHours)+'"></div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Staff count</label><input id="f_staff" type="number" min="0" value="'+(l.staffCount==null?"":l.staffCount)+'"></div>'+
+        '<div class="form-row"><label>Vendor finance offered?</label><select id="f_vendor">'+
+          ["","yes","no","unsure"].map(function(v){return '<option value="'+v+'"'+(l.vendorFinance===v?" selected":"")+'>'+(v||"—")+'</option>';}).join("")+
+        '</select></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="modal-section"><h3>Your ratings (1–5, leave blank if unsure)</h3>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Reason for sale quality</label>'+starPickerHtml("reasonForSaleRating", l.reasonForSaleRating||0)+'</div>'+
+        '<div class="form-row"><label>Growth potential</label>'+starPickerHtml("growthPotentialRating", l.growthPotentialRating||0)+'</div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Customer diversity</label>'+starPickerHtml("customerConcentrationRating", l.customerConcentrationRating||0)+'</div>'+
+        '<div class="form-row"><label>Industry outlook</label>'+starPickerHtml("industryOutlookRating", l.industryOutlookRating||0)+'</div>'+
+      '</div>'+
+      '<div class="grid2">'+
+        '<div class="form-row"><label>Assets & inventory value</label>'+starPickerHtml("assetValueRating", l.assetValueRating||0)+'</div>'+
+        '<div class="form-row"><label>Team / key-person risk</label>'+starPickerHtml("staffRiskRating", l.staffRiskRating||0)+'</div>'+
+      '</div>'+
+      '<div class="form-row"><label>Reason given for sale (text)</label><input id="f_reasonText" type="text" value="'+escapeAttr(l.reasonForSale)+'"></div>'+
+    '</div>'+
+    '<div class="modal-section"><h3>Notes</h3>'+
+      '<div class="form-row"><label>Lease / premises notes</label><textarea id="f_lease">'+escapeHtml(l.leaseNotes)+'</textarea></div>'+
+      '<div class="form-row"><label>Assets & inventory detail</label><textarea id="f_assetsNotes">'+escapeHtml(l.assetsNotes)+'</textarea></div>'+
+      '<div class="form-row"><label>General notes</label><textarea id="f_notes">'+escapeHtml(l.notes)+'</textarea></div>'+
+    '</div>'+
+    '<div class="modal-footer">'+
+      '<span class="msg" id="modalMsg"></span>'+
+      '<button class="btn ghost" id="btnCancel" type="button">Cancel</button>'+
+      '<button class="btn primary" id="btnSave" type="button">'+(isNew?"Add listing":"Save changes")+'</button>'+
+    '</div>';
+  }
+
+  function wireModal(l){
+    document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+    document.getElementById("btnCancel").addEventListener("click", closeModal);
+
+    document.querySelectorAll(".starpick").forEach(function(sp){
+      var field = sp.dataset.field;
+      sp.querySelectorAll("button").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var v = Number(btn.dataset.val);
+          l[field] = v===0 ? null : v;
+          sp.querySelectorAll("button[data-val]").forEach(function(b2){
+            var bv = Number(b2.dataset.val);
+            if(bv>0) b2.classList.toggle("on", bv<=v);
+          });
+        });
+      });
+    });
+
+    var parseBtn = document.getElementById("btnParsePaste");
+    if(parseBtn){
+      parseBtn.addEventListener("click", function(){ applyPasteGuess(document.getElementById("pasteArea").value); });
+    }
+
+    document.getElementById("btnSave").addEventListener("click", function(){
+      l.name = document.getElementById("f_name").value.trim();
+      l.industry = document.getElementById("f_industry").value.trim();
+      l.url = document.getElementById("f_url").value.trim();
+      l.state = document.getElementById("f_state").value;
+      l.suburb = document.getElementById("f_suburb").value.trim();
+      l.addedBy = document.getElementById("f_addedBy").value.trim();
+      if(l.addedBy) localStorage.setItem("muster_user", l.addedBy);
+      l.askingPrice = num(document.getElementById("f_price").value);
+      l.annualRevenue = num(document.getElementById("f_revenue").value);
+      l.netProfit = num(document.getElementById("f_profit").value);
+      l.recurringRevenuePct = num(document.getElementById("f_recurring").value);
+      l.yearsEstablished = num(document.getElementById("f_years").value);
+      l.ownerHours = num(document.getElementById("f_hours").value);
+      l.staffCount = num(document.getElementById("f_staff").value);
+      l.vendorFinance = document.getElementById("f_vendor").value;
+      l.reasonForSale = document.getElementById("f_reasonText").value.trim();
+      l.leaseNotes = document.getElementById("f_lease").value.trim();
+      l.assetsNotes = document.getElementById("f_assetsNotes").value.trim();
+      l.notes = document.getElementById("f_notes").value.trim();
+      l.status = l.status || "active";
+
+      if(!l.name){ document.getElementById("f_name").focus(); return; }
+
+      var msg = document.getElementById("modalMsg");
+      var saveBtn = document.getElementById("btnSave");
+      msg.textContent = "Saving…";
+      saveBtn.disabled = true;
+
+      postAction({action: editingId===null ? "add" : "update", listing: l})
+        .then(function(){ return fetchListings(); })
+        .then(function(){ closeModal(); })
+        .catch(function(err){
+          msg.textContent = "Could not save: " + err.message;
+          saveBtn.disabled = false;
+        });
+    });
+  }
+
+  function applyPasteGuess(text){
+    if(!text || !text.trim()) return;
+    var lines = text.split(/\n/).map(function(s){return s.trim();}).filter(Boolean);
+    if(lines.length && !document.getElementById("f_name").value){
+      document.getElementById("f_name").value = lines[0].slice(0,120);
+    }
+
+    function moneyNear(keywords){
+      var re = new RegExp("("+keywords.join("|")+")[^\\n$]{0,40}?\\$\\s?([\\d,]+(?:\\.\\d+)?)\\s?(k|K|m|M)?","i");
+      var m = text.match(re);
+      if(!m) return null;
+      var v = parseFloat(m[2].replace(/,/g,""));
+      if(/^m$/i.test(m[3]||"")) v *= 1000000;
+      if(/^k$/i.test(m[3]||"")) v *= 1000;
+      return Math.round(v);
+    }
+    var price = moneyNear(["asking","price","offers over","o\\.?n\\.?o"]);
+    var revenue = moneyNear(["revenue","turnover","sales"]);
+    var profit = moneyNear(["net profit","ebitda","sde","profit"]);
+
+    if(price!=null) document.getElementById("f_price").value = price;
+    if(revenue!=null) document.getElementById("f_revenue").value = revenue;
+    if(profit!=null) document.getElementById("f_profit").value = profit;
+
+    var stateMatch = text.match(/\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b/);
+    if(stateMatch) document.getElementById("f_state").value = stateMatch[1];
+
+    var hoursMatch = text.match(/(\d+)\s?(?:\-\s?\d+\s?)?(?:hrs|hours)\s?(?:a|\/|per)?\s?week/i);
+    if(hoursMatch) document.getElementById("f_hours").value = hoursMatch[1];
+
+    var staffMatch = text.match(/(\d+)\s?(?:staff|employees|fte)/i);
+    if(staffMatch) document.getElementById("f_staff").value = staffMatch[1];
+
+    var estMatch = text.match(/established[^\n\d]{0,10}(\d{4})/i) || text.match(/since\s(\d{4})/i);
+    if(estMatch){
+      var years = new Date().getFullYear() - parseInt(estMatch[1],10);
+      if(years>0 && years<150) document.getElementById("f_years").value = years;
+    } else {
+      var yrsMatch = text.match(/(\d+)\+?\s?years?\s?(?:established|trading|old|in business)/i);
+      if(yrsMatch) document.getElementById("f_years").value = yrsMatch[1];
+    }
+  }
+
+  document.getElementById("btnAdd").addEventListener("click", function(){ openListingModal(null); });
+  document.getElementById("btnAddEmpty").addEventListener("click", function(){ if(backendConfigured()) openListingModal(null); });
+
+  // ---------- delete confirm ----------
+
+  function confirmDelete(id, name){
+    var modal = document.getElementById("modalInner");
+    modal.className = "confirm-modal";
+    modal.innerHTML = '<h2>Delete listing?</h2>'+
+      '<p style="margin-top:10px;color:var(--slate);font-size:13.5px;">This removes "'+escapeHtml(name||"this listing")+'" from the shared database for everyone. This cannot be undone (export a backup first if unsure).</p>'+
+      '<div class="modal-footer"><span class="msg" id="delMsg"></span><button class="btn ghost" id="cdCancel">Cancel</button><button class="btn danger" id="cdConfirm">Delete</button></div>';
+    document.getElementById("overlay").classList.add("show");
+    document.getElementById("cdCancel").addEventListener("click", closeModal);
+    document.getElementById("cdConfirm").addEventListener("click", function(){
+      var msg = document.getElementById("delMsg");
+      msg.textContent = "Deleting…";
+      postAction({action:"delete", id:id})
+        .then(function(){ return fetchListings(); })
+        .then(function(){ closeModal(); })
+        .catch(function(err){ msg.textContent = "Could not delete: " + err.message; });
+    });
+  }
+
+  // ---------- export / import ----------
+
+  function downloadFile(filename, mime, content){
+    if(window.claude && window.claude.downloads && window.claude.downloads.save){
+      window.claude.downloads.save({filename:filename, data:content}).catch(function(){ fallbackDownload(filename, mime, content); });
+    } else {
+      fallbackDownload(filename, mime, content);
+    }
+  }
+  function fallbackDownload(filename, mime, content){
+    var blob = new Blob([content], {type:mime});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  document.getElementById("btnExportJson").addEventListener("click", function(){
+    var payload = JSON.stringify({listings:state.listings, settings:state.settings, exportedAt:new Date().toISOString()}, null, 2);
+    downloadFile("muster-export-"+new Date().toISOString().slice(0,10)+".json", "application/json", payload);
+  });
+
+  document.getElementById("btnExportCsv").addEventListener("click", function(){
+    var cols = ["name","industry","state","suburb","askingPrice","annualRevenue","netProfit","priceMultiple","yearsEstablished","ownerHours","staffCount","recurringRevenuePct","vendorFinance","reasonForSale","score","excluded","status","addedBy","dateAdded","url"];
+    var rows = state.listings.map(function(l){
+      var mult = multiple(l);
+      var score = aggregate(l, state.settings);
+      var excl = evalKnockouts(l, state.settings).length>0;
+      var row = {name:l.name, industry:l.industry, state:l.state, suburb:l.suburb, askingPrice:l.askingPrice, annualRevenue:l.annualRevenue,
+        netProfit:l.netProfit, priceMultiple: mult===null?"":Math.round(mult*100)/100, yearsEstablished:l.yearsEstablished, ownerHours:l.ownerHours,
+        staffCount:l.staffCount, recurringRevenuePct:l.recurringRevenuePct, vendorFinance:l.vendorFinance, reasonForSale:l.reasonForSale,
+        score: score===null?"":Math.round(score), excluded: excl, status:l.status, addedBy:l.addedBy, dateAdded:l.dateAdded, url:l.url};
+      return cols.map(function(c){
+        var v = row[c]; if(v===null||v===undefined) v="";
+        v = String(v).replace(/"/g,'""');
+        return '"'+v+'"';
+      }).join(",");
+    });
+    var csv = cols.join(",") + "\n" + rows.join("\n");
+    downloadFile("muster-export-"+new Date().toISOString().slice(0,10)+".csv", "text/csv", csv);
+  });
+
+  document.getElementById("btnImportJson").addEventListener("click", function(){
+    if(!backendConfigured()){ alert("Connect the backend first (see SETUP.md) — import writes into the shared database."); return; }
+    document.getElementById("fileImport").click();
+  });
+  document.getElementById("fileImport").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var data = JSON.parse(reader.result);
+        if(!data || !Array.isArray(data.listings)) throw new Error("bad shape");
+        showImportChoice(data);
+      }catch(err){
+        alert("That file doesn't look like a Muster export.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  function showImportChoice(data){
+    var modal = document.getElementById("modalInner");
+    modal.className = "confirm-modal";
+    modal.innerHTML = '<h2>Import listings</h2>'+
+      '<p style="margin-top:10px;color:var(--slate);font-size:13.5px;">Found '+data.listings.length+' listing(s) in this file. They will be upserted into the shared database (matched by id) — this affects everyone.</p>'+
+      '<div class="modal-footer"><span class="msg" id="impMsg"></span><button class="btn ghost" id="impCancel">Cancel</button><button class="btn primary" id="impGo">Import</button></div>';
+    document.getElementById("overlay").classList.add("show");
+    document.getElementById("impCancel").addEventListener("click", closeModal);
+    document.getElementById("impGo").addEventListener("click", function(){
+      var msg = document.getElementById("impMsg");
+      var i = 0;
+      function next(){
+        if(i >= data.listings.length){
+          fetchListings().then(closeModal);
+          return;
+        }
+        var l = data.listings[i];
+        msg.textContent = "Importing " + (i+1) + " / " + data.listings.length + "…";
+        postAction({action:"add", listing:l}).then(function(){ i++; next(); }).catch(function(err){
+          msg.textContent = "Stopped at " + (i+1) + ": " + err.message;
+        });
+      }
+      next();
+      if(data.settings){ state.settings = Object.assign(defaultSettings(), data.settings); saveSettings(); renderKnockouts(); renderWeights(); }
+    });
+  }
+
+  // ---------- init ----------
+  renderKnockouts();
+  renderWeights();
+  renderBanner();
+  fetchListings();
+
+})();
+</script>
