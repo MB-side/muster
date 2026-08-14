@@ -209,6 +209,41 @@
   .footnote b{color:var(--ink);}
   .footnote code{font-family:var(--font-mono);font-size:11.5px;background:var(--paper-sunk);padding:1px 4px;border-radius:3px;}
 
+  /* two-column layout: list scrolls, controls stay put */
+  .layout{display:flex;gap:18px;align-items:flex-start;}
+  .col-main{flex:1 1 auto;min-width:0;}
+  .col-side{flex:0 0 236px;width:236px;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow-y:auto;}
+  .panel{background:var(--paper-raised);border:1px solid var(--line);border-radius:11px;padding:13px 14px;}
+  .panel h5{font-family:var(--font-body);font-size:10px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--slate-soft);margin:0 0 8px;font-weight:700;}
+  .panel + .panel{margin-top:11px;}
+  .panel .search,.panel .sortsel{width:100%;margin-bottom:8px;}
+  .panel .toggle-label{display:flex;align-items:flex-start;gap:7px;padding:6px 0;font-size:12.5px;
+    color:var(--ink);line-height:1.35;border-top:1px solid var(--line);cursor:pointer;}
+  .panel .toggle-label:first-of-type{border-top:none;}
+  .panel .toggle-label input{margin-top:2px;flex:none;}
+  .panel .count-pill{display:block;font-size:11.5px;line-height:1.5;color:var(--slate);}
+  .panel .count-pill b{color:var(--ink);font-size:15px;font-family:var(--font-mono);}
+  .tallybar{display:flex;height:7px;border-radius:4px;overflow:hidden;margin:7px 0 8px;background:var(--paper-sunk);}
+  .tallybar i{display:block;height:100%;}
+  .tallybar i.go{background:var(--pass);} .tallybar i.caution{background:var(--warn);}
+  .tallybar i.walk{background:var(--fail);} .tallybar i.unknown{background:var(--slate-soft);}
+  .tallyrow{display:flex;justify-content:space-between;font-size:11.5px;color:var(--slate);padding:1px 0;}
+  .tallyrow b{font-family:var(--font-mono);color:var(--ink);}
+
+  @media (max-width:900px){
+    .layout{flex-direction:column;}
+    /* order matters: the panel is after the list in the DOM (correct for screen readers
+       and for the wide layout), so on narrow screens it must be pulled above the list,
+       otherwise position:sticky has nothing to stick to until you reach the bottom. */
+    .col-side{order:-1;position:sticky;top:0;width:100%;flex:none;max-height:none;z-index:30;
+      background:var(--paper);padding:8px 0;border-bottom:1px solid var(--line);}
+    .col-main{order:1;}
+    .col-side .panel{padding:10px 12px;}
+    .col-side .panel:nth-child(n+2){display:none;}   /* keep the sticky bar shallow on phones */
+    .panel .toggle-label{font-size:12px;}
+  }
+
   /* how-it-works guide */
   .guide{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden;}
   .guide > summary{cursor:pointer;padding:12px 16px;font-size:13.5px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;}
@@ -334,30 +369,40 @@
     <span class="estkey" title="Shown in amber with a ~ mark: this figure was filled from an industry average, or calculated from one. Not from the advertisement."><span class="sw"></span><b>amber&nbsp;~</b> estimated, not from the ad</span>
   </div>
 
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <input class="search" id="search" type="text" placeholder="Search name, industry, location…">
-      <select class="sortsel" id="sortSel">
-        <option value="verdict">Sort: Verdict, then priority</option>
-        <option value="priority">Sort: Priority score, high to low</option>
-        <option value="return">Sort: Return, high to low</option>
-        <option value="left">Sort: Earnings after management</option>
-        <option value="multiple">Sort: Earnings multiple, low to high</option>
-        <option value="price-asc">Sort: Price, low to high</option>
-        <option value="date">Sort: Recently added</option>
-      </select>
-      <label class="toggle-label"><input type="checkbox" id="hideWalk"> Hide walk-aways</label>
-      <label class="toggle-label"><input type="checkbox" id="hideDelisted" checked> Hide delisted</label>
-      <label class="toggle-label" title="Ads rarely state equipment upkeep, and most withhold profit. Turn this on and Muster fills the gaps with typical figures for that industry so it can still produce a verdict. Estimated figures are underlined, and a listing running on an estimated profit can never be rated Go."><input type="checkbox" id="useBench"> Fill gaps with industry averages</label>
+  <div class="layout">
+    <div class="col-main">
+      <div id="listings"></div>
+      <div class="empty" id="emptyState" style="display:none;">
+        <h2 id="emptyTitle">No listings yet</h2>
+        <div id="emptyBody">Add one manually, or paste text copied from a listing page.</div>
+        <div style="margin-top:14px;"><button class="btn primary" id="btnAddEmpty">+ Add your first listing</button></div>
+      </div>
     </div>
-    <div class="count-pill" id="countPill"></div>
-  </div>
 
-  <div id="listings"></div>
-  <div class="empty" id="emptyState" style="display:none;">
-    <h2 id="emptyTitle">No listings yet</h2>
-    <div id="emptyBody">Add one manually, or paste text copied from a listing page.</div>
-    <div style="margin-top:14px;"><button class="btn primary" id="btnAddEmpty">+ Add your first listing</button></div>
+    <aside class="col-side">
+      <div class="panel">
+        <h5>Find</h5>
+        <input class="search" id="search" type="text" placeholder="Search name, industry…">
+        <select class="sortsel" id="sortSel">
+          <option value="verdict">Sort: Verdict, then priority</option>
+          <option value="priority">Sort: Priority score, high to low</option>
+          <option value="return">Sort: Return, high to low</option>
+          <option value="left">Sort: Earnings after management</option>
+          <option value="multiple">Sort: Earnings multiple, low to high</option>
+          <option value="price-asc">Sort: Price, low to high</option>
+          <option value="date">Sort: Recently added</option>
+        </select>
+        <h5 style="margin-top:12px;">Show</h5>
+        <label class="toggle-label" title="Hide everything that fails a test outright, so only your shortlist and the not-yet-judged remain."><input type="checkbox" id="hideWalk"> Hide walk-aways</label>
+        <label class="toggle-label" title="Hide listings you have marked as no longer available."><input type="checkbox" id="hideDelisted"> Hide delisted</label>
+        <label class="toggle-label" title="Ads rarely state equipment upkeep, and most withhold profit. Turn this on and Muster fills the gaps with typical figures for that industry so it can still produce a verdict. Estimated figures and everything calculated from them appear in amber with a ~ mark, and a listing running on an estimated profit can never be rated Go."><input type="checkbox" id="useBench"> Fill gaps with industry averages</label>
+      </div>
+
+      <div class="panel">
+        <h5>Showing</h5>
+        <div class="count-pill" id="countPill"></div>
+      </div>
+    </aside>
   </div>
 
   <div class="footnote">
@@ -1084,6 +1129,7 @@
   // otherwise on whatever card is at the top of the viewport.
   function renderKeepingPlace() {
     var anchor = document.querySelector(".listing.open") ||
+      document.querySelector(".listing:hover") ||
       Array.prototype.find.call(document.querySelectorAll(".listing"), function (c) {
         return c.getBoundingClientRect().bottom > 0;
       });
@@ -1134,9 +1180,24 @@
 
     var counts = { go: 0, caution: 0, walk: 0, unknown: 0 };
     items.forEach(function (x) { counts[x.r.overall]++; });
-    document.getElementById("countPill").textContent = state.listings.length === 0 ? "" :
-      shown.length + " shown · " + state.listings.length + " total · " +
-      counts.go + " go / " + counts.caution + " caution / " + counts.walk + " walk / " + counts.unknown + " unknown";
+    var pill = document.getElementById("countPill");
+    if (state.listings.length === 0) { pill.innerHTML = ""; }
+    else {
+      var tot = items.length || 1;
+      var w = function (n) { return (100 * n / tot).toFixed(1) + "%"; };
+      pill.innerHTML =
+        "<b>" + shown.length + "</b> of " + state.listings.length + " listings" +
+        '<div class="tallybar">' +
+          '<i class="go" style="width:' + w(counts.go) + '"></i>' +
+          '<i class="caution" style="width:' + w(counts.caution) + '"></i>' +
+          '<i class="walk" style="width:' + w(counts.walk) + '"></i>' +
+          '<i class="unknown" style="width:' + w(counts.unknown) + '"></i>' +
+        "</div>" +
+        '<div class="tallyrow"><span>Go</span><b>' + counts.go + "</b></div>" +
+        '<div class="tallyrow"><span>Investigate</span><b>' + counts.caution + "</b></div>" +
+        '<div class="tallyrow"><span>Walk</span><b>' + counts.walk + "</b></div>" +
+        '<div class="tallyrow"><span>Not enough data</span><b>' + counts.unknown + "</b></div>";
+    }
   }
 
   function el(tag, cls, html) {
