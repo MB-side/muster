@@ -120,7 +120,12 @@
   .num .v.over{color:var(--fail);} .num .v.under{color:var(--pass);}
   .num .v.gap{color:var(--slate-soft);}
 
-  .est{border-bottom:1px dashed var(--brass);cursor:help;}
+  /* estimated: filled from an industry average, or derived from one */
+  .est{color:var(--brass) !important;border-bottom:1px dotted var(--brass);cursor:help;}
+  .est::after{content:"~";font-size:.72em;vertical-align:super;opacity:.85;margin-left:1px;}
+  .num .v.est,.flow-step .v.est{color:var(--brass) !important;}
+  .estkey{display:inline-flex;align-items:center;gap:5px;color:var(--brass);}
+  .estkey .sw{width:12px;height:12px;border-radius:3px;border:2px dotted var(--brass);background:var(--brass-bg);}
 
   .listing-actions{display:flex;gap:6px;margin-top:13px;flex-wrap:wrap;}
   .listing-detail{margin-top:13px;padding-top:13px;border-top:1px solid var(--line);display:none;}
@@ -313,7 +318,7 @@
 
       <h4>The "Fill gaps with industry averages" switch</h4>
       <p>Ads never state things like annual equipment upkeep, and most withhold profit. With this switch <b>off</b>, those listings honestly show <span class="eg">—</span> and sit as <i>Unknown</i>. With it <b>on</b>, Muster fills the gaps with typical figures for that industry so it can still produce a verdict.</p>
-      <p>Estimated figures appear <span class="est">underlined like this</span>, and a listing running on an estimated profit figure carries a warning chip and <b>can never be rated Go</b> — a rough estimate is good enough to rule a business out cheaply, never good enough to rule one in.</p>
+      <p>Estimated figures appear <span class="est">in amber with a ~ mark</span>, and so does <b>anything calculated from them</b> — if the profit was estimated, the return, multiple and payback built on it are marked too.  and a listing running on an estimated profit figure carries a warning chip and <b>can never be rated Go</b> — a rough estimate is good enough to rule a business out cheaply, never good enough to rule one in.</p>
 
       <h4>How to use it</h4>
       <p>Turn on <b>Fill gaps with industry averages</b> and sort by verdict. Ignore everything marked Walk. The handful showing Caution are worth contacting the broker about — ask for three years of accounts, then enter the real figures and the verdict will sharpen. Nothing should reach Go on advertised numbers alone.</p>
@@ -326,6 +331,7 @@
     <span class="li"><span class="sw caution"></span><b>Investigate</b> your shortlist</span>
     <span class="li"><span class="sw walk"></span><b>Walk</b> fails a test</span>
     <span class="li"><span class="sw unknown"></span><b>?</b> not enough data — not a bad score</span>
+    <span class="estkey" title="Shown in amber with a ~ mark: this figure was filled from an industry average, or calculated from one. Not from the advertisement."><span class="sw"></span><b>amber&nbsp;~</b> estimated, not from the ad</span>
   </div>
 
   <div class="toolbar">
@@ -357,7 +363,7 @@
   <div class="footnote">
     <b>How the screen works.</b> Earnings are reduced to what's actually left for an owner who isn't working in the business: <code>profit pool</code> (earnings less maintenance capex and systems uplift) minus <code>management cost</code> (the vendor's role priced at market rates, using the cheapest management route actually available to you) gives <code>earnings after management</code>, then a 10% transition haircut. Return, payback and price ÷ earnings are all measured against that figure, not against advertised profit — which is why a business marketed at 2.5× can still fail a 3.5× ceiling.
     <br><br>
-    <b>Gaps never move the score.</b> A missing input shows as <code>—</code> with a "needs" chip and the affected verdict row reads <i>insufficient data</i>. Nothing is silently defaulted. Turning on <b>benchmark estimates</b> fills gaps with sector figures shown <span class="est">dashed like this</span> — useful for triage, never counted in the verdict.
+    <b>Gaps never move the score.</b> A missing input shows as <code>—</code> with a "needs" chip and the affected verdict row reads <i>insufficient data</i>. Nothing is silently defaulted. Turning on <b>benchmark estimates</b> fills gaps with sector figures shown <span class="est">in amber like this</span> — useful for triage, never counted in the verdict.
     <br><br>
     <b>Shared vs personal.</b> Listing data lives in the shared Google Sheet — you and anyone else with the link see the same records. Only display preferences are local to your browser.
   </div>
@@ -524,12 +530,16 @@
     var gaps = [];
     var benchUsed = [];
 
-    // resolve(value, benchmarkValue, gapLabel) — honours the no-silent-default rule
-    function resolve(v, bench, label) {
+    // est[key] = true means that input came from an industry average, not the ad.
+    // Tracked per input so the UI can mark every figure that DEPENDS on one, not just
+    // the input itself.
+    var est = {};
+    function resolve(v, bench, label, key) {
       var n = num(v);
       if (n !== null) return n;
       if (useBench && bench !== undefined && bench !== null) {
         benchUsed.push(label);
+        if (key) est[key] = true;
         return bench;
       }
       gaps.push(label);
@@ -570,30 +580,30 @@
     var band = num(l.bandOverride) || bandFor(sde);
     var bandCfg = band ? BANDS[band] : null;
 
-    var cmPct = resolve(l.contributionMarginPct, sector ? sector.cmPct : null, "contribution margin %");
+    var cmPct = resolve(l.contributionMarginPct, sector ? sector.cmPct : null, "contribution margin %", "cm");
 
     // maintenance capex: explicit $ wins, else % of revenue, else sector benchmark
     var mc = num(l.maintenanceCapex);
     if (mc === null) {
       var capexPct = num(l.maintenanceCapexPct);
-      if (capexPct === null && useBench && sector) { capexPct = sector.capexPct; benchUsed.push("maintenance capex"); }
+      if (capexPct === null && useBench && sector) { capexPct = sector.capexPct; benchUsed.push("maintenance capex"); est.capex = true; }
       if (capexPct !== null && revenue !== null) mc = revenue * capexPct / 100;
       else if (mc === null) gaps.push("maintenance capex");
     }
-    var su = resolve(l.systemsUplift, BENCH.systemsUplift, "systems & compliance uplift");
+    var su = resolve(l.systemsUplift, BENCH.systemsUplift, "systems & compliance uplift", "systems");
 
     // ---------- vendor role ----------
-    var vh = resolve(l.vendorHoursPerWeek, BENCH.vendorHours, "vendor hours per week");
-    var pT = resolve(l.pctProduction, BENCH.pctProduction, "vendor % production");
-    var pM = resolve(l.pctManagement, BENCH.pctManagement, "vendor % management");
-    var pS = resolve(l.pctSales, BENCH.pctSales, "vendor % sales");
+    var vh = resolve(l.vendorHoursPerWeek, BENCH.vendorHours, "vendor hours per week", "hours");
+    var pT = resolve(l.pctProduction, BENCH.pctProduction, "vendor % production", "splits");
+    var pM = resolve(l.pctManagement, BENCH.pctManagement, "vendor % management", "splits");
+    var pS = resolve(l.pctSales, BENCH.pctSales, "vendor % sales", "splits");
     var onCost = num(l.onCostMultiplier) || BENCH.onCost;
 
-    var prodSalary = resolve(l.prodSalary, sector ? sector.prodSalary : null, "production salary benchmark");
+    var prodSalary = resolve(l.prodSalary, sector ? sector.prodSalary : null, "production salary benchmark", "salaries");
     var mgmtSalary = resolve(l.mgmtSalary,
-      band ? MGMT_SALARY_BY_BAND[band] : BENCH.mgmtSalary, "management salary benchmark");
+      band ? MGMT_SALARY_BY_BAND[band] : BENCH.mgmtSalary, "management salary benchmark", "salaries");
     var salesSalary = resolve(l.salesSalary,
-      band ? SALES_SALARY_BY_BAND[band] : BENCH.salesSalary, "sales salary benchmark");
+      band ? SALES_SALARY_BY_BAND[band] : BENCH.salesSalary, "sales salary benchmark", "salaries");
 
     // sanity cross-check from B3 Step 1
     var staff = num(l.staffCount);
@@ -769,9 +779,9 @@
       else row("Breakeven revenue decline", o.breakevenDecline > 0.20 ? "go" : (o.breakevenDecline < 0.10 ? "walk" : "caution"),
                pct(o.breakevenDecline));
 
-      if (o.effectiveMultiple === null || !M) row("Price ÷ earnings", "unknown", "insufficient data");
-      else row("Price ÷ earnings", o.effectiveMultiple < M ? "go" : (o.effectiveMultiple > M + 1.0 ? "walk" : "caution"),
-               o.effectiveMultiple.toFixed(1) + "x vs ceiling " + M.toFixed(1) + "x");
+      if (o.effectiveMultiple === null || !M) row("Earnings multiple", "unknown", "insufficient data");
+      else row("Earnings multiple", o.effectiveMultiple < M ? "go" : (o.effectiveMultiple > M + 1.0 ? "walk" : "caution"),
+               o.effectiveMultiple.toFixed(1) + "x vs max " + M.toFixed(1) + "x");
 
       if (aieVal === null) row("Earnings after management", "unknown", "insufficient data");
       else row("Earnings after management", aieVal > 0 ? "go" : "walk",
@@ -833,6 +843,16 @@
       });
     }
 
+    // Propagate the marks through the chain, so a figure is flagged when anything it
+    // was built from came from an industry average.
+    est.earnings    = !!estimatedEarnings;
+    est.profitPool  = !!(est.earnings || est.capex || est.systems);
+    est.replaceCost = !!(est.hours || est.splits || est.salaries);
+    est.aie         = !!(est.profitPool || est.replaceCost);
+    est.outputs     = !!est.aie;                       // return, multiple, payback, max price
+    est.breakeven   = !!(est.aie || est.cm);
+    est.any         = !!(est.aie || est.cm);
+
     // Headline = the best route genuinely open to you, not an assumed hire.
     var chosenOut, chosenVerdict, overall, priority = null, aie = null, aoe = null;
     if (bestKey) {
@@ -854,7 +874,7 @@
       profitPool: profitPool, rc: rc, routes: routes, buckets: buckets,
       bestRoute: bestKey, bestRouteLabel: bestKey ? ROUTE_LABEL[bestKey] : null,
       aoe: aoe, aie: aie, tci: tci, price: price,
-      outputs: out, priority: priority, a3Score: a3Score, a3Coverage: a3Coverage,
+      outputs: out, priority: priority, est: est, a3Score: a3Score, a3Coverage: a3Coverage,
       a2Fails: a2Fails, a2Unknown: a2Unknown,
       confidence: confidence, confidenceNote: confidenceNote, inputCoverage: inputCoverage,
       confPenalty: confPenalty, requiredReturn: T,
@@ -890,7 +910,7 @@
   // ===== Backend configuration =====
   var BACKEND_URL = "https://script.google.com/macros/s/AKfycbyTNhEeFgHnFS5W7gdlECt_nNe3wFzdIqRGlo_4YByUYPWcHbC9fJnCoSLmEZQUVyhcJw/exec";
 
-  var PREFS_KEY = "muster_prefs_v2";
+  var PREFS_KEY = "muster_prefs_v3";
   var STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
   var TIER_OPTS = [
     ["", "tier not recorded"], ["1", "1 · verified doc"], ["2", "2 · derived"],
@@ -981,16 +1001,24 @@
 
   // ---- state ----
   var prefs = loadPrefs();
+  // Which listings have their Details panel open. Held outside the render so that
+  // re-rendering (e.g. toggling a filter) does not silently close what you were reading.
+  var openCards = {};
   var state = { listings: [], loading: true, backendError: null, search: "" };
 
   function loadPrefs() {
     try {
       var p = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
       return {
-        sort: p.sort || "verdict", hideWalk: !!p.hideWalk,
-        hideDelisted: p.hideDelisted !== false, useBench: !!p.useBench
+        // All three default ON: the point of the tool is to surface the shortlist, and
+        // without gap-filling almost everything reads "unknown". Turning any of them off
+        // is remembered.
+        sort: p.sort || "verdict",
+        hideWalk: p.hideWalk !== false,
+        hideDelisted: p.hideDelisted !== false,
+        useBench: p.useBench !== false
       };
-    } catch (e) { return { sort: "verdict", hideWalk: false, hideDelisted: true, useBench: false }; }
+    } catch (e) { return { sort: "verdict", hideWalk: true, hideDelisted: true, useBench: true }; }
   }
   function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
 
@@ -1050,6 +1078,26 @@
   }
 
   function renderAll() { renderBanner(); renderListings(); }
+
+  // Re-render without the page jumping: measure where a card sits on screen, redraw,
+  // then scroll by the difference so it stays put. Anchors on the first open panel,
+  // otherwise on whatever card is at the top of the viewport.
+  function renderKeepingPlace() {
+    var anchor = document.querySelector(".listing.open") ||
+      Array.prototype.find.call(document.querySelectorAll(".listing"), function (c) {
+        return c.getBoundingClientRect().bottom > 0;
+      });
+    var id = anchor && anchor.dataset.id;
+    var before = anchor ? anchor.getBoundingClientRect().top : null;
+    renderListings();
+    if (id && before !== null) {
+      var after = document.querySelector('.listing[data-id="' + id + '"]');
+      if (after) {
+        var delta = after.getBoundingClientRect().top - before;
+        if (delta) window.scrollBy(0, delta);
+      }
+    }
+  }
 
   function renderListings() {
     var items = evaluated();
@@ -1136,9 +1184,9 @@
 
     // --- the management flow: the headline ---
     var flow = el("div", "flow");
-    var poolEst = r.benchUsed.length > 0 || r.estimatedEarnings;
+    var est = r.est || {};
     var fs1 = el("div", "flow-step",
-      '<span class="k">Profit pool</span>' + flowVal(r.profitPool, poolEst) +
+      '<span class="k">Profit pool</span>' + flowVal(r.profitPool, est.profitPool) +
       '<span class="sub">' + (r.metric || "earnings") + " less capex &amp; systems</span>");
     fs1.title = "What the business earns, after setting aside money to replace worn-out equipment "
       + "and to pay for the bookkeeping, software and compliance the current owner may run without.";
@@ -1146,7 +1194,7 @@
 
     var mgmtSub = r.bestRouteLabel ? r.bestRouteLabel : "no route priced";
     var fs2 = el("div", "flow-step",
-      '<span class="k">Cost to replace the owner</span>' + flowVal(r.rc === null ? null : -r.rc, poolEst) +
+      '<span class="k">Cost to replace the owner</span>' + flowVal(r.rc === null ? null : -r.rc, est.replaceCost) +
       '<span class="sub">' + mgmtSub + "</span>");
     fs2.title = "The full cost of covering everything the owner currently does — not one "
       + "manager's salary. It is the sum of three jobs: production/delivery, management and "
@@ -1155,7 +1203,7 @@
 
     var neg = r.aie !== null && r.aie <= 0;
     var fs3 = el("div", "flow-step result" + (neg ? " neg" : ""),
-      '<span class="k">Earnings after management</span>' + flowVal(r.aie, poolEst) +
+      '<span class="k">Earnings after management</span>' + flowVal(r.aie, est.aie) +
       '<span class="sub">' + (neg ? "cannot fund its own management" : "after 10% transition haircut") + "</span>");
     fs3.title = "What would actually reach you as the owner. A 10% haircut is applied because "
       + "revenue almost always dips in the first year under new ownership."
@@ -1165,37 +1213,38 @@
 
     // --- key numbers ---
     var nums = el("div", "nums");
-    function n(k, v, cls, tip) {
+    function n(k, v, cls, tip, isEst) {
       var d = el("div", "num", '<span class="k">' + k + '</span><span class="v tnum ' +
-        (cls || (v === "—" ? "gap" : "")) + '">' + v + "</span>");
-      if (tip) d.title = tip;
+        (cls || (v === "—" ? "gap" : "")) + (isEst && v !== "—" ? " est" : "") + '">' + v + "</span>");
+      if (tip) d.title = (isEst && v !== "—"
+        ? "ESTIMATED — this figure rests on an industry average, not the advertisement. " : "") + (tip || "");
       nums.appendChild(d);
     }
-    n("Asking", l.askingPrice ? money(num(l.askingPrice)) : "—", "", "The advertised asking price.");
+    n("Asking", l.askingPrice ? money(num(l.askingPrice)) : "—", "", "The advertised asking price.", false);
     n("Annual revenue", r.revenue !== null ? money(r.revenue) : "—", "",
       "Total sales for ONE YEAR, before any costs are taken out. Not profit, and not a "
-      + "lifetime figure.");
+      + "lifetime figure.", false);
     n("Return", r.outputs.returnPct !== null ? E.pct(r.outputs.returnPct) +
       (r.requiredReturn ? " (need " + E.pct(r.requiredReturn) + (r.confPenalty ? "*" : "") + ")" : "") : "—",
       r.outputs.returnPct !== null && r.requiredReturn ? (r.outputs.returnPct >= r.requiredReturn ? "under" : "over") : "",
       "What this deal returns each year on the money you put in, against what a business of "
       + "this size should return given the risk. Green = beats the benchmark, red = falls short."
       + (r.confPenalty ? " The * means the benchmark was raised by "
-          + E.pct(r.confPenalty) + " because the figures are unverified." : ""));
+          + E.pct(r.confPenalty) + " because the figures are unverified." : ""), est.outputs);
     n("Earnings multiple", r.outputs.effectiveMultiple !== null ?
       r.outputs.effectiveMultiple.toFixed(1) + "x (max " + r.bandCfg.multipleCeiling.toFixed(1) + "x)" : "—",
       r.outputs.effectiveMultiple !== null && r.bandCfg ? (r.outputs.effectiveMultiple <= r.bandCfg.multipleCeiling ? "under" : "over") : "",
       "How many years of earnings the asking price represents, once the owner's replacement "
       + "is paid. 2.9x means the price equals 2.9 years of real earnings; the figure in "
       + "brackets is the most you should sensibly pay. Brokers quote a lower number because "
-      + "they divide by the owner's earnings, which assumes you work there unpaid.");
+      + "they divide by the owner's earnings, which assumes you work there unpaid.", est.outputs);
     n("Payback", r.outputs.payback !== null ? r.outputs.payback.toFixed(1) + " yrs" : "—", "",
       "Years to get all your money back. Slightly longer than the earnings multiple because "
       + "it counts the extra cash you need beyond the purchase price — working capital, legal "
-      + "and accounting fees, catch-up repairs.");
+      + "and accounting fees, catch-up repairs.", est.outputs);
     n("Max price", r.outputs.maxPrice !== null ? money(r.outputs.maxPrice) : "—", "",
       "The most you could pay and still hit your target return. Compare with the asking price — "
-      + "the gap is your negotiating room, or your reason to walk away.");
+      + "the gap is your negotiating room, or your reason to walk away.", est.outputs);
     c.appendChild(nums);
 
     // --- licence line ---
@@ -1211,9 +1260,12 @@
 
     // --- actions ---
     var acts = el("div", "listing-actions");
-    var bd = mkBtn("Details", "small ghost", function () {
+    if (openCards[l.id]) c.classList.add("open");
+    var bd = mkBtn(openCards[l.id] ? "Hide details" : "Details", "small ghost", function () {
       c.classList.toggle("open");
-      bd.textContent = c.classList.contains("open") ? "Hide details" : "Details";
+      var isOpen = c.classList.contains("open");
+      if (isOpen) openCards[l.id] = true; else delete openCards[l.id];
+      bd.textContent = isOpen ? "Hide details" : "Details";
     });
     acts.appendChild(bd);
     acts.appendChild(mkBtn("Edit", "small ghost", function () { openModal(l.id); }));
@@ -1642,13 +1694,13 @@
   // ---- toolbar wiring ----
   document.getElementById("search").addEventListener("input", function (e) { state.search = e.target.value; renderListings(); });
   var ss = document.getElementById("sortSel"); ss.value = prefs.sort;
-  ss.addEventListener("change", function (e) { prefs.sort = e.target.value; savePrefs(); renderListings(); });
+  ss.addEventListener("change", function (e) { prefs.sort = e.target.value; savePrefs(); renderKeepingPlace(); });
   bindToggle("hideWalk"); bindToggle("hideDelisted");
   var ub = document.getElementById("useBench"); ub.checked = prefs.useBench;
-  ub.addEventListener("change", function (e) { prefs.useBench = e.target.checked; savePrefs(); renderListings(); });
+  ub.addEventListener("change", function (e) { prefs.useBench = e.target.checked; savePrefs(); renderKeepingPlace(); });
   function bindToggle(id) {
     var n = document.getElementById(id); n.checked = prefs[id];
-    n.addEventListener("change", function (e) { prefs[id] = e.target.checked; savePrefs(); renderListings(); });
+    n.addEventListener("change", function (e) { prefs[id] = e.target.checked; savePrefs(); renderKeepingPlace(); });
   }
   document.getElementById("btnRefresh").addEventListener("click", fetchListings);
   document.getElementById("btnAdd").addEventListener("click", function () { openModal(null); });
