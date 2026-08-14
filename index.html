@@ -204,6 +204,37 @@
   .footnote b{color:var(--ink);}
   .footnote code{font-family:var(--font-mono);font-size:11.5px;background:var(--paper-sunk);padding:1px 4px;border-radius:3px;}
 
+  /* how-it-works guide */
+  .guide{background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden;}
+  .guide > summary{cursor:pointer;padding:12px 16px;font-size:13.5px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px;}
+  .guide > summary::-webkit-details-marker{display:none;}
+  .guide > summary::before{content:"▸";color:var(--brass);font-size:12px;}
+  .guide[open] > summary::before{content:"▾";}
+  .guide > summary:hover{color:var(--brass);}
+  .guide-body{padding:0 16px 16px;font-size:13.5px;line-height:1.6;}
+  .guide-body h4{font-family:var(--font-body);font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--slate);margin:16px 0 7px;font-weight:700;}
+  .guide-body h4:first-child{margin-top:4px;}
+  .guide-body p{margin:0 0 9px;max-width:78ch;}
+  .guide-body dl{margin:0;display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:6px 14px;align-items:baseline;}
+  .guide-body dt{font-weight:700;font-size:12.5px;}
+  .guide-body dd{margin:0;color:var(--slate);font-size:13px;}
+  .guide-body .eg{font-family:var(--font-mono);font-size:12px;background:var(--paper-sunk);
+    padding:1px 5px;border-radius:3px;white-space:nowrap;}
+  .guide-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 12px;font-size:12.5px;}
+  .guide-flow span{background:var(--paper-sunk);border:1px solid var(--line);border-radius:7px;padding:6px 10px;}
+  .guide-flow b{color:var(--brass);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:9px 13px;margin-bottom:12px;
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:9px;font-size:12px;}
+  .legend .li{display:flex;align-items:center;gap:6px;color:var(--slate);}
+  .legend .sw{width:12px;height:12px;border-radius:3px;border:2px solid;flex:none;}
+  .legend .sw.go{border-color:var(--pass);background:var(--pass-bg);}
+  .legend .sw.caution{border-color:var(--warn);background:var(--warn-bg);}
+  .legend .sw.walk{border-color:var(--fail);background:var(--fail-bg);}
+  .legend .sw.unknown{border-color:var(--slate-soft);background:var(--unknown-bg);}
+  .legend b{color:var(--ink);}
+
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
 </style>
 
@@ -231,20 +262,87 @@
 
   <div id="bannerHost"></div>
 
+  <details class="guide" id="guide" open>
+    <summary>How Muster works — read this first</summary>
+    <div class="guide-body">
+      <p>Business ads quote profit earned by an owner who works in the business full time, usually unpaid. If you are not going to be that person, that profit is not what you would receive. Muster recalculates every listing on the assumption that <b>somebody has to be paid to do the owner's job</b>, then asks whether the asking price still makes sense.</p>
+
+      <h4>The three figures on every card</h4>
+      <div class="guide-flow">
+        <span><b>Profit pool</b><br>what the business earns, less equipment upkeep and admin costs</span>
+        <span>−</span>
+        <span><b>Cost to replace the owner</b><br>three jobs, not one salary: production, management, sales</span>
+        <span>=</span>
+        <span><b>Earnings after management</b><br>what would actually reach you</span>
+      </div>
+
+      <h4>Why "cost to replace the owner" looks so large</h4>
+      <p>It is not one manager's wage. Most owners do three jobs at once, and the figure covers all of them: <b>production or delivery</b> (the billable work), <b>management and admin</b>, and <b>sales and relationships</b>. Open Details to see the hours, headcount and cost of each.</p>
+      <p>The rates scale with the size of the business — a corner shop is assumed to need a working supervisor, a $3m business a general manager. Where the ad does not say how many hours the owner works, Muster assumes 50 a week, which is typical but worth checking: it is often the single biggest assumption behind a Walk.</p>
+
+      <h4>Who runs the business — and why it changes everything</h4>
+      <p>The same business can be a good or a bad buy depending on who ends up running it. Muster prices three routes and the headline figures follow <b>the best one actually open to you</b>:</p>
+      <dl>
+        <dt>Keep existing manager</dt><dd>Cheapest by far, because their wage is already in the accounts — you only pay a premium to retain them. Only offered when the listing confirms someone below the owner already runs day-to-day operations.</dd>
+        <dt>Hire a manager</dt><dd>Always available, always the most expensive. A full market-rate salary to replace the owner.</dd>
+        <dt>Run it yourselves</dt><dd>Deliberately ruled out unless the role is genuinely light-touch (under 15 hrs/week) <b>and</b> needs no trade licence or industry credential. Otherwise you are buying a job in a trade you do not know.</dd>
+      </dl>
+      <p>Open <b>Details</b> on any listing to see all three side by side, each with its own return and verdict. A business can be a Walk if you hire and an Investigate if you keep the manager — that difference is often the whole deal.</p>
+
+      <h4>What the colours mean</h4>
+      <dl>
+        <dt style="color:var(--pass)">Go</dt><dd>Passes every test. Rare, and only possible once real accounts are verified.</dd>
+        <dt style="color:var(--warn)">Investigate</dt><dd>Passes on the numbers, but something needs checking or negotiating. This is your shortlist — worth contacting the broker.</dd>
+        <dt style="color:var(--fail)">Walk</dt><dd>Fails at least one test outright. One failure is enough — they are not averaged.</dd>
+        <dt style="color:var(--slate)">?  Unknown</dt><dd>Not enough information to judge. This is <b>not</b> a bad score — it means the ad withheld something needed, usually the profit figure.</dd>
+      </dl>
+
+      <h4>The priority score</h4>
+      <p>The number under each verdict badge, <span class="eg">priority 87</span>, ranks how worth-a-closer-look the business is on its economics alone — return, multiple, payback and how far revenue could fall before it stops paying. It is scored out of 100 over whichever tests could be run, so a listing missing one input still gets a score rather than nothing. Sort by it to work down the list.</p>
+      <p>It is not a confidence measure. A high-priority listing built on unverified broker figures is still unverified — the verdict badge and the data-confidence row tell you that part.</p>
+
+      <h4>The numbers</h4>
+      <p>Where a benchmark applies it is spelled out in brackets, e.g. <span class="eg">12% (need 35%)</span>, so you always know which figure is this deal and which is the standard.</p>
+      <dl>
+        <dt>Annual revenue</dt><dd>Total sales for <b>one year</b>, before any costs come out. Not profit, and not a lifetime total.</dd>
+        <dt>Return</dt><dd><span class="eg">12% (need 35%)</span> — this deal returns 12% a year on your money where a business this size should return 35%. Below the benchmark means you are being paid too little for the risk. A <span class="eg">*</span> means the benchmark was raised because the figures are unverified.</dd>
+        <dt>Earnings multiple</dt><dd><span class="eg">6.8x (max 3.5x)</span> — the price equals 6.8 years of earnings once the owner's replacement is paid, where 3.5 years is the most you should sensibly pay. Brokers advertise a much lower number because they divide by the <i>owner's</i> earnings, which quietly assumes you work there unpaid. (Elsewhere this is called the <i>effective multiple</i>.)</dd>
+        <dt>Payback</dt><dd>Years to get all your money back. It is always a little longer than the earnings multiple — the multiple counts only the purchase price, while payback also counts the cash you need on top: working capital, legal and accounting fees, catch-up repairs. For a small business that extra is roughly a third again, so a 2.9x multiple shows as about 3.9 years' payback.</dd>
+        <dt>Max price</dt><dd>The most you could pay and still hit your target return. Compare it with the asking price — that gap is your negotiating room, or your reason to walk.</dd>
+      </dl>
+
+      <h4>The "Fill gaps with industry averages" switch</h4>
+      <p>Ads never state things like annual equipment upkeep, and most withhold profit. With this switch <b>off</b>, those listings honestly show <span class="eg">—</span> and sit as <i>Unknown</i>. With it <b>on</b>, Muster fills the gaps with typical figures for that industry so it can still produce a verdict.</p>
+      <p>Estimated figures appear <span class="est">underlined like this</span>, and a listing running on an estimated profit figure carries a warning chip and <b>can never be rated Go</b> — a rough estimate is good enough to rule a business out cheaply, never good enough to rule one in.</p>
+
+      <h4>How to use it</h4>
+      <p>Turn on <b>Fill gaps with industry averages</b> and sort by verdict. Ignore everything marked Walk. The handful showing Caution are worth contacting the broker about — ask for three years of accounts, then enter the real figures and the verdict will sharpen. Nothing should reach Go on advertised numbers alone.</p>
+    </div>
+  </details>
+
+  <div class="legend">
+    <span style="color:var(--slate);">Verdict:</span>
+    <span class="li"><span class="sw go"></span><b>Go</b> passes everything</span>
+    <span class="li"><span class="sw caution"></span><b>Investigate</b> your shortlist</span>
+    <span class="li"><span class="sw walk"></span><b>Walk</b> fails a test</span>
+    <span class="li"><span class="sw unknown"></span><b>?</b> not enough data — not a bad score</span>
+  </div>
+
   <div class="toolbar">
     <div class="toolbar-left">
       <input class="search" id="search" type="text" placeholder="Search name, industry, location…">
       <select class="sortsel" id="sortSel">
-        <option value="verdict">Sort: Verdict, best first</option>
+        <option value="verdict">Sort: Verdict, then priority</option>
+        <option value="priority">Sort: Priority score, high to low</option>
         <option value="return">Sort: Return, high to low</option>
         <option value="left">Sort: Earnings after management</option>
-        <option value="multiple">Sort: Effective multiple, low to high</option>
+        <option value="multiple">Sort: Earnings multiple, low to high</option>
         <option value="price-asc">Sort: Price, low to high</option>
         <option value="date">Sort: Recently added</option>
       </select>
       <label class="toggle-label"><input type="checkbox" id="hideWalk"> Hide walk-aways</label>
       <label class="toggle-label"><input type="checkbox" id="hideDelisted" checked> Hide delisted</label>
-      <label class="toggle-label" title="Fill gaps with sector benchmarks. Estimated figures are shown dashed and never affect the verdict."><input type="checkbox" id="useBench"> Show benchmark estimates</label>
+      <label class="toggle-label" title="Ads rarely state equipment upkeep, and most withhold profit. Turn this on and Muster fills the gaps with typical figures for that industry so it can still produce a verdict. Estimated figures are underlined, and a listing running on an estimated profit can never be rated Go."><input type="checkbox" id="useBench"> Fill gaps with industry averages</label>
     </div>
     <div class="count-pill" id="countPill"></div>
   </div>
@@ -257,7 +355,7 @@
   </div>
 
   <div class="footnote">
-    <b>How the screen works.</b> Earnings are reduced to what's actually left for an owner who isn't working in the business: <code>profit pool</code> (earnings less maintenance capex and systems uplift) minus <code>management cost</code> (the vendor's role priced at market rates) gives <code>earnings after management</code>, then a 10% transition haircut. Return, payback and the effective multiple are all measured against that figure, not against advertised profit — which is why a business marketed at 2.5× can still fail a 3.5× ceiling.
+    <b>How the screen works.</b> Earnings are reduced to what's actually left for an owner who isn't working in the business: <code>profit pool</code> (earnings less maintenance capex and systems uplift) minus <code>management cost</code> (the vendor's role priced at market rates, using the cheapest management route actually available to you) gives <code>earnings after management</code>, then a 10% transition haircut. Return, payback and price ÷ earnings are all measured against that figure, not against advertised profit — which is why a business marketed at 2.5× can still fail a 3.5× ceiling.
     <br><br>
     <b>Gaps never move the score.</b> A missing input shows as <code>—</code> with a "needs" chip and the affected verdict row reads <i>insufficient data</i>. Nothing is silently defaulted. Turning on <b>benchmark estimates</b> fills gaps with sector figures shown <span class="est">dashed like this</span> — useful for triage, never counted in the verdict.
     <br><br>
@@ -288,6 +386,8 @@
   var PRODUCTIVE_HOURS = 1750; // per B3 Step 3
   var FIRST_TIMER_K = 1.4;     // competence factor, fixed (B3 Step 2 default)
   var SCREEN_HAIRCUT = 0.9;    // B10 transition haircut
+  // "Run it yourselves" is only a real option when the role is genuinely light-touch.
+  var SELF_MAX_HOURS = 15;
 
   // ---- B0 scale bands -------------------------------------------------------
   var BANDS = {
@@ -314,6 +414,20 @@
     vendorHours: 50, pctProduction: 40, pctManagement: 40, pctSales: 20,
     mgmtSalary: 95000, salesSalary: 95000, onCost: 1.30, systemsUplift: 25000,
     retentionPremiumPct: 20
+  };
+
+  // A corner shop does not hire the same person as a $4m manufacturer. Flat benchmarks
+  // badly overstated replacement cost at the small end, so these scale with the band.
+  // Indicative AU base salaries before on-costs; all Tier 4 estimates.
+  var MGMT_SALARY_BY_BAND  = { 1: 72000, 2: 95000, 3: 130000, 4: 170000 };
+  var SALES_SALARY_BY_BAND = { 1: 62000, 2: 85000, 3: 110000, 4: 140000 };
+
+  // Typical owner-earnings (SDE) margins by sector, used ONLY to estimate earnings for a
+  // listing that publishes revenue but not profit — which is most of them. An estimate
+  // built this way can rule a business OUT cheaply, but must never rule one IN: see
+  // estimatedEarnings handling in compute(), which caps the verdict at "caution".
+  var SDE_MARGIN = {
+    service: 0.20, trades: 0.18, equipment: 0.15, health: 0.22, retail: 0.10, food: 0.14
   };
 
   // ---- A2 screening filters -------------------------------------------------
@@ -430,7 +544,7 @@
     var a1 = num(l.addBackOwnerComp), a2 = num(l.addBackDiscretionary);
     var a3 = num(l.addBackNonRecurring), a4 = num(l.addBackIDA);
 
-    var sde = null, sdeSource = null;
+    var sde = null, sdeSource = null, estimatedEarnings = false;
     var stated = num(l.statedEarnings);
     if (stated !== null) {
       sde = stated;
@@ -441,6 +555,14 @@
     } else if (np !== null) {
       sde = np;
       sdeSource = "reported net profit only — no add-backs captured";
+    } else if (useBench && revenue !== null && SDE_MARGIN[l.sector]) {
+      // Last resort: infer earnings from revenue at a sector-typical margin. Flagged as
+      // estimated so the verdict can be capped below "go".
+      sde = revenue * SDE_MARGIN[l.sector];
+      estimatedEarnings = true;
+      sdeSource = "ESTIMATED at a typical " + Math.round(SDE_MARGIN[l.sector] * 100) +
+                  "% owner-earnings margin for " + l.sector + " — the ad gives revenue but no profit";
+      benchUsed.push("earnings estimated from revenue");
     } else {
       gaps.push("earnings (SDE/EBITDA or net profit)");
     }
@@ -468,8 +590,10 @@
     var onCost = num(l.onCostMultiplier) || BENCH.onCost;
 
     var prodSalary = resolve(l.prodSalary, sector ? sector.prodSalary : null, "production salary benchmark");
-    var mgmtSalary = resolve(l.mgmtSalary, BENCH.mgmtSalary, "management salary benchmark");
-    var salesSalary = resolve(l.salesSalary, BENCH.salesSalary, "sales salary benchmark");
+    var mgmtSalary = resolve(l.mgmtSalary,
+      band ? MGMT_SALARY_BY_BAND[band] : BENCH.mgmtSalary, "management salary benchmark");
+    var salesSalary = resolve(l.salesSalary,
+      band ? SALES_SALARY_BY_BAND[band] : BENCH.salesSalary, "sales salary benchmark");
 
     // sanity cross-check from B3 Step 1
     var staff = num(l.staffCount);
@@ -509,24 +633,36 @@
         }
 
         // SELF: you absorb management + sales; business still pays for production cover.
+        // Only offered when the role is genuinely light-touch AND needs no trade credential,
+        // because otherwise it is buying a job in an industry you do not know.
         var self = buckets.production.annualCost;
         hoursIfSelf = (vh * (pM + pS) / 100) * FIRST_TIMER_K;
+        var holder = l.licenceHolder || "unknown";
+        var selfReasons = [];
+        if (hoursIfSelf > SELF_MAX_HOURS)
+          selfReasons.push("needs about " + Math.round(hoursIfSelf) + " hrs/week, past the " +
+                           SELF_MAX_HOURS + " hr light-touch limit");
+        if (holder === "individual")
+          selfReasons.push("the licence is held by a named individual, so it needs industry credentials");
+        var selfViable = selfReasons.length === 0;
 
-        rc = hire;
         routes = {
-          keep: { cost: keep, note: keepNote },
-          hire: { cost: hire, note: "Full external replacement of the vendor's role." },
-          self: { cost: self, hours: hoursIfSelf,
-                  note: "You cover management and sales (" + Math.round(hoursIfSelf) +
-                        " hrs/wk at a 1.4× first-timer factor); business still funds production cover." }
+          keep: { cost: keep, note: keepNote, viable: keep !== null },
+          hire: { cost: hire, viable: true,
+                  note: "Full external replacement of the vendor's role at market rates." },
+          self: { cost: self, hours: hoursIfSelf, viable: selfViable,
+                  note: selfViable
+                    ? "You cover management and sales (about " + Math.round(hoursIfSelf) +
+                      " hrs/wk at a 1.4x first-timer factor); the business still funds production cover."
+                    : "Ruled out: " + selfReasons.join("; ") + "." +
+                      (holder === "unknown" && l.licenceRequired
+                        ? " Confirm who holds the licence." : "") }
         };
       }
     }
 
     // ---------- the question that matters: is there profit to deploy? ----------
     var profitPool = (sde !== null && mc !== null && su !== null) ? sde - mc - su : null;
-    var aoe = (profitPool !== null && rc !== null) ? profitPool - rc : null;
-    var aie = aoe !== null ? aoe * SCREEN_HAIRCUT : null;
 
     // ---------- capital ----------
     // TCI(P) = P × capitalMult + capitalFixed. Keeping the two parts separate matters
@@ -539,24 +675,29 @@
     if (price !== null && capitalMult) tci = price * capitalMult + capitalFixed;
     else if (price === null) gaps.push("asking price");
 
-    // ---------- outputs ----------
-    var out = {
-      returnPct: (aie !== null && tci) ? aie / tci : null,
-      payback: (aie !== null && tci && aie > 0) ? tci / aie : null,
-      breakevenDecline: (aie !== null && revenue !== null && cmPct !== null && revenue * cmPct > 0)
-        ? aie / (revenue * cmPct / 100) : null,
-      effectiveMultiple: (price !== null && aie !== null && aie > 0) ? price / aie : null,
-      maxPrice: null, maxPriceRange: null
-    };
-    if (aie !== null && aie > 0 && bandCfg && capitalMult) {
-      // aie ÷ (P × mult + fixed) = T   →   P = (aie ÷ T − fixed) ÷ mult
-      var solve = function (t) { return ((aie / t) - capitalFixed) / capitalMult; };
-      out.maxPrice = solve(bandCfg.targetReturn);
-      out.maxPriceRange = {
-        low: solve(bandCfg.targetReturn + 0.05),
-        mid: out.maxPrice,
-        high: solve(Math.max(0.01, bandCfg.targetReturn - 0.05))
+    // ---------- outputs + verdict, evaluated PER MANAGEMENT ROUTE ----------
+    // The old model always assumed you hire. That understates any business with a manager
+    // already in place, so each viable route is now scored on its own and the headline
+    // follows the best one available.
+    function evaluateRoute(aieVal) {
+      var o = {
+        returnPct: (aieVal !== null && tci) ? aieVal / tci : null,
+        payback: (aieVal !== null && tci && aieVal > 0) ? tci / aieVal : null,
+        breakevenDecline: (aieVal !== null && revenue !== null && cmPct !== null && revenue * cmPct > 0)
+          ? aieVal / (revenue * cmPct / 100) : null,
+        effectiveMultiple: (price !== null && aieVal !== null && aieVal > 0) ? price / aieVal : null,
+        maxPrice: null, maxPriceRange: null
       };
+      if (aieVal !== null && aieVal > 0 && bandCfg && capitalMult) {
+        var solve = function (t) { return ((aieVal / t) - capitalFixed) / capitalMult; };
+        o.maxPrice = solve(bandCfg.targetReturn);
+        o.maxPriceRange = {
+          low: solve(bandCfg.targetReturn + 0.05),
+          mid: o.maxPrice,
+          high: solve(Math.max(0.01, bandCfg.targetReturn - 0.05))
+        };
+      }
+      return o;
     }
 
     // ---------- A3 scorecard, renormalised over scored domains ----------
@@ -602,12 +743,7 @@
     }
     var inputCoverage = presentImpact / 100;
 
-    // ---------- verdict ----------
-    var verdict = [];
-    function row(label, state, detail) { verdict.push({ label: label, state: state, detail: detail }); }
-    // B8: weak data raises the hurdle, it does not by itself fail the deal. At screening
-    // stage every input is a vendor assertion, so treating low confidence as an automatic
-    // walk would mark everything "walk" and destroy the verdict's information value.
+    // ---------- verdict, scored separately for each management route ----------
     var confPenalty = 0;
     if (confidence !== null) {
       if (confidence < 0.70) confPenalty = 0.10;
@@ -616,52 +752,109 @@
     var T = bandCfg ? bandCfg.targetReturn + confPenalty : null;
     var M = bandCfg ? bandCfg.multipleCeiling : null;
 
-    if (out.returnPct === null || !T) row("Unlevered return", "unknown", "insufficient data");
-    else row("Unlevered return", out.returnPct > T ? "go" : (out.returnPct < T - 0.10 ? "walk" : "caution"),
-             pct(out.returnPct) + " vs required " + pct(T) +
-             (confPenalty ? " (" + pct(bandCfg.targetReturn) + " + " + pct(confPenalty) + " for data quality)" : ""));
+    function verdictFor(aieVal, o) {
+      var rows = [];
+      function row(label, state, detail) { rows.push({ label: label, state: state, detail: detail }); }
 
-    if (out.payback === null || !T) row("Payback", "unknown", "insufficient data");
-    else row("Payback", out.payback < 1.2 / T ? "go" : (out.payback > 1.6 / T ? "walk" : "caution"),
-             out.payback.toFixed(1) + " yrs vs " + (1.2 / T).toFixed(1) + "/" + (1.6 / T).toFixed(1));
+      if (o.returnPct === null || !T) row("Return on your money", "unknown", "insufficient data");
+      else row("Return on your money", o.returnPct > T ? "go" : (o.returnPct < T - 0.10 ? "walk" : "caution"),
+               pct(o.returnPct) + " vs required " + pct(T) +
+               (confPenalty ? " (" + pct(bandCfg.targetReturn) + " + " + pct(confPenalty) + " for data quality)" : ""));
 
-    if (out.breakevenDecline === null) row("Breakeven revenue decline", "unknown", "insufficient data");
-    else row("Breakeven revenue decline", out.breakevenDecline > 0.20 ? "go" : (out.breakevenDecline < 0.10 ? "walk" : "caution"),
-             pct(out.breakevenDecline));
+      if (o.payback === null || !T) row("Payback", "unknown", "insufficient data");
+      else row("Payback", o.payback < 1.2 / T ? "go" : (o.payback > 1.6 / T ? "walk" : "caution"),
+               o.payback.toFixed(1) + " yrs vs " + (1.2 / T).toFixed(1) + "/" + (1.6 / T).toFixed(1));
 
-    if (out.effectiveMultiple === null || !M) row("Effective multiple (P ÷ AIE)", "unknown", "insufficient data");
-    else row("Effective multiple (P ÷ AIE)", out.effectiveMultiple < M ? "go" : (out.effectiveMultiple > M + 1.0 ? "walk" : "caution"),
-             out.effectiveMultiple.toFixed(1) + "x vs ceiling " + M.toFixed(1) + "x");
+      if (o.breakevenDecline === null) row("Breakeven revenue decline", "unknown", "insufficient data");
+      else row("Breakeven revenue decline", o.breakevenDecline > 0.20 ? "go" : (o.breakevenDecline < 0.10 ? "walk" : "caution"),
+               pct(o.breakevenDecline));
 
-    if (aie === null) row("Earnings after management", "unknown", "insufficient data");
-    else row("Earnings after management", aie > 0 ? "go" : "walk",
-             money(aie) + (aie <= 0 ? " — business cannot fund its own management" : ""));
+      if (o.effectiveMultiple === null || !M) row("Price ÷ earnings", "unknown", "insufficient data");
+      else row("Price ÷ earnings", o.effectiveMultiple < M ? "go" : (o.effectiveMultiple > M + 1.0 ? "walk" : "caution"),
+               o.effectiveMultiple.toFixed(1) + "x vs ceiling " + M.toFixed(1) + "x");
 
-    // Informational only — never a walk. Its effect is applied to the required return above.
-    if (confidence === null) row("Data confidence", "unknown", confidenceNote || "insufficient data");
-    else row("Data confidence", confidence > 0.85 ? "go" : "caution",
-             confidence.toFixed(2) + (confPenalty ? " → +" + pct(confPenalty) + " on required return" : ""));
+      if (aieVal === null) row("Earnings after management", "unknown", "insufficient data");
+      else row("Earnings after management", aieVal > 0 ? "go" : "walk",
+               money(aieVal) + (aieVal <= 0 ? " — business cannot fund its own management" : ""));
 
-    // A2 hard fails override everything
-    var overall;
-    if (a2Fails.length) overall = "walk";
-    else {
-      var walks = verdict.filter(function (v) { return v.state === "walk"; }).length;
-      var cautions = verdict.filter(function (v) { return v.state === "caution"; }).length;
-      var unknowns = verdict.filter(function (v) { return v.state === "unknown"; }).length;
-      if (walks) overall = "walk";
-      else if (unknowns >= 4) overall = "unknown";
-      else if (cautions) overall = "caution";
-      else overall = "go";
+      if (confidence === null) row("Data confidence", "unknown", confidenceNote || "insufficient data");
+      else row("Data confidence", confidence > 0.85 ? "go" : "caution",
+               confidence.toFixed(2) + (confPenalty ? " → +" + pct(confPenalty) + " on required return" : ""));
+
+      var v;
+      if (a2Fails.length) v = "walk";
+      else {
+        var walks = rows.filter(function (x) { return x.state === "walk"; }).length;
+        var cautions = rows.filter(function (x) { return x.state === "caution"; }).length;
+        var unknowns = rows.filter(function (x) { return x.state === "unknown"; }).length;
+        if (walks) v = "walk";
+        else if (unknowns >= 4) v = "unknown";
+        else if (cautions) v = "caution";
+        else v = "go";
+      }
+      // An estimated earnings figure may reject a deal, never endorse one.
+      if (estimatedEarnings && v === "go") v = "caution";
+      return { rows: rows, overall: v };
     }
+
+    // A 0-100 ranking of how worth-a-closer-look this is, on the economics alone.
+    // Deliberately separate from the manual A3 scorecard (which is almost never filled
+    // in) so that every listing gets a number for prioritising. Renormalised over
+    // whichever tests could be run, so a missing input lowers confidence, not the score.
+    function priorityOf(o, aieVal) {
+      var parts = [];
+      function add(w, v) { if (v !== null && isFinite(v)) parts.push([w, Math.max(0, Math.min(1, v))]); }
+      if (o.returnPct !== null && T) add(35, (o.returnPct / T) / 1.5);
+      if (o.effectiveMultiple !== null && M && o.effectiveMultiple > 0) add(25, (M / o.effectiveMultiple) / 1.5);
+      if (o.payback !== null && T) add(15, ((1.6 / T) / o.payback) / 1.5);
+      if (o.breakevenDecline !== null) add(15, o.breakevenDecline / 0.25);
+      if (aieVal !== null) add(10, aieVal > 0 ? 1 : 0);
+      if (!parts.length) return null;
+      var wSum = parts.reduce(function (a, p) { return a + p[0]; }, 0);
+      var acc = parts.reduce(function (a, p) { return a + p[0] * p[1]; }, 0);
+      return Math.round((acc / wSum) * 100);
+    }
+
+    // Score every route that is actually available to you.
+    var ROUTE_LABEL = { keep: "keep the existing manager", hire: "hire a manager",
+                        self: "run it yourselves" };
+    var routeOrder = ["keep", "hire", "self"], bestKey = null;
+    if (routes && profitPool !== null) {
+      routeOrder.forEach(function (k) {
+        var r = routes[k];
+        if (!r || r.cost === null || r.cost === undefined || !r.viable) return;
+        r.aie = (profitPool - r.cost) * SCREEN_HAIRCUT;
+        var o = evaluateRoute(r.aie);
+        var vd = verdictFor(r.aie, o);
+        r.outputs = o; r.overall = vd.overall; r.verdict = vd.rows;
+        r.priority = priorityOf(o, r.aie);
+        r.label = ROUTE_LABEL[k];
+        if (bestKey === null || r.aie > routes[bestKey].aie) bestKey = k;
+      });
+    }
+
+    // Headline = the best route genuinely open to you, not an assumed hire.
+    var chosenOut, chosenVerdict, overall, priority = null, aie = null, aoe = null;
+    if (bestKey) {
+      var b = routes[bestKey];
+      aie = b.aie; rc = b.cost; aoe = profitPool - b.cost;
+      chosenOut = b.outputs; chosenVerdict = b.verdict; overall = b.overall; priority = b.priority;
+    } else {
+      if (routes && routes.hire && routes.hire.cost != null) rc = routes.hire.cost;
+      chosenOut = evaluateRoute(null);
+      var fb = verdictFor(null, chosenOut);
+      chosenVerdict = fb.rows; overall = fb.overall; priority = priorityOf(chosenOut, null);
+    }
+    var out = chosenOut, verdict = chosenVerdict;
 
     return {
       band: band, bandCfg: bandCfg, metric: bandCfg ? bandCfg.metric : null,
-      sde: sde, sdeSource: sdeSource, revenue: revenue, cmPct: cmPct,
+      sde: sde, sdeSource: sdeSource, estimatedEarnings: estimatedEarnings, revenue: revenue, cmPct: cmPct,
       maintenanceCapex: mc, systemsUplift: su,
       profitPool: profitPool, rc: rc, routes: routes, buckets: buckets,
+      bestRoute: bestKey, bestRouteLabel: bestKey ? ROUTE_LABEL[bestKey] : null,
       aoe: aoe, aie: aie, tci: tci, price: price,
-      outputs: out, a3Score: a3Score, a3Coverage: a3Coverage,
+      outputs: out, priority: priority, a3Score: a3Score, a3Coverage: a3Coverage,
       a2Fails: a2Fails, a2Unknown: a2Unknown,
       confidence: confidence, confidenceNote: confidenceNote, inputCoverage: inputCoverage,
       confPenalty: confPenalty, requiredReturn: T,
@@ -684,6 +877,7 @@
   return {
     compute: compute, BANDS: BANDS, SECTORS: SECTORS, BENCH: BENCH,
     A2_FILTERS: A2_FILTERS, A3_DOMAINS: A3_DOMAINS, TIER_IMPACT: TIER_IMPACT,
+    SDE_MARGIN: SDE_MARGIN,
     bandFor: bandFor, costBucket: costBucket, money: money, pct: pct
   };
 });
@@ -875,7 +1069,11 @@
         case "price-asc": return (num(a.l.askingPrice) === null ? Infinity : num(a.l.askingPrice)) -
                                  (num(b.l.askingPrice) === null ? Infinity : num(b.l.askingPrice));
         case "date": return String(b.l.dateAdded || "").localeCompare(String(a.l.dateAdded || ""));
-        default: return VERDICT_ORDER[a.r.overall] - VERDICT_ORDER[b.r.overall];
+        case "priority": return (b.r.priority === null ? -1 : b.r.priority) -
+                                (a.r.priority === null ? -1 : a.r.priority);
+        default: return (VERDICT_ORDER[a.r.overall] - VERDICT_ORDER[b.r.overall]) ||
+                        ((b.r.priority === null ? -1 : b.r.priority) -
+                         (a.r.priority === null ? -1 : a.r.priority));
       }
     });
 
@@ -920,6 +1118,7 @@
 
     var meta = el("div", "listing-meta");
     if (r.band) meta.appendChild(chip("Band " + r.band + " · " + r.bandCfg.name + " · " + r.metric, "band"));
+    if (r.estimatedEarnings) meta.appendChild(chip("Earnings ESTIMATED — cannot rate better than caution", "warn"));
     if (l.industry) meta.appendChild(chip(l.industry));
     if (l.state) meta.appendChild(chip(l.state + (l.suburb ? " · " + l.suburb : "")));
     if (l.status === "delisted") meta.appendChild(chip("Delisted", "warn"));
@@ -928,49 +1127,75 @@
     top.appendChild(left);
 
     var vb = el("div", "verdict-badge " + r.overall);
-    vb.innerHTML = '<div class="v">' + (r.overall === "unknown" ? "?" : r.overall) + "</div>" +
-      '<div class="s">' + (r.a3Score !== null ? "score " + Math.round(r.a3Score) : "unscored") + "</div>";
+    var VERDICT_WORD = { go: "Go", caution: "Investigate", walk: "Walk", unknown: "?" };
+    vb.innerHTML = '<div class="v">' + VERDICT_WORD[r.overall] + "</div>" +
+      '<div class="s">' + (r.priority !== null ? "priority " + r.priority
+        : (r.a3Score !== null ? "score " + Math.round(r.a3Score) : "no data")) + "</div>";
     top.appendChild(vb);
     c.appendChild(top);
 
     // --- the management flow: the headline ---
     var flow = el("div", "flow");
-    var poolEst = r.benchUsed.length > 0;
-    flow.appendChild(el("div", "flow-step",
+    var poolEst = r.benchUsed.length > 0 || r.estimatedEarnings;
+    var fs1 = el("div", "flow-step",
       '<span class="k">Profit pool</span>' + flowVal(r.profitPool, poolEst) +
-      '<span class="sub">' + (r.metric || "earnings") + " less capex &amp; systems</span>"));
+      '<span class="sub">' + (r.metric || "earnings") + " less capex &amp; systems</span>");
+    fs1.title = "What the business earns, after setting aside money to replace worn-out equipment "
+      + "and to pay for the bookkeeping, software and compliance the current owner may run without.";
+    flow.appendChild(fs1);
 
-    var mgmtSub = "no route priced";
-    if (r.routes) {
-      var best = bestRoute(r);
-      mgmtSub = best ? best.label + " route" : "not priced";
-    }
-    flow.appendChild(el("div", "flow-step",
-      '<span class="k">Management cost</span>' + flowVal(r.rc === null ? null : -r.rc, poolEst) +
-      '<span class="sub">' + mgmtSub + "</span>"));
+    var mgmtSub = r.bestRouteLabel ? r.bestRouteLabel : "no route priced";
+    var fs2 = el("div", "flow-step",
+      '<span class="k">Cost to replace the owner</span>' + flowVal(r.rc === null ? null : -r.rc, poolEst) +
+      '<span class="sub">' + mgmtSub + "</span>");
+    fs2.title = "The full cost of covering everything the owner currently does — not one "
+      + "manager's salary. It is the sum of three jobs: production/delivery, management and "
+      + "admin, and sales. Open Details for the breakdown and to compare the three routes.";
+    flow.appendChild(fs2);
 
     var neg = r.aie !== null && r.aie <= 0;
-    flow.appendChild(el("div", "flow-step result" + (neg ? " neg" : ""),
+    var fs3 = el("div", "flow-step result" + (neg ? " neg" : ""),
       '<span class="k">Earnings after management</span>' + flowVal(r.aie, poolEst) +
-      '<span class="sub">' + (neg ? "cannot fund its own management" : "after 10% transition haircut") + "</span>"));
+      '<span class="sub">' + (neg ? "cannot fund its own management" : "after 10% transition haircut") + "</span>");
+    fs3.title = "What would actually reach you as the owner. A 10% haircut is applied because "
+      + "revenue almost always dips in the first year under new ownership."
+      + (neg ? " This business does not earn enough to pay someone to run it." : "");
+    flow.appendChild(fs3);
     c.appendChild(flow);
 
     // --- key numbers ---
     var nums = el("div", "nums");
-    function n(k, v, cls) {
-      nums.appendChild(el("div", "num", '<span class="k">' + k + '</span><span class="v tnum ' +
-        (cls || (v === "—" ? "gap" : "")) + '">' + v + "</span>"));
+    function n(k, v, cls, tip) {
+      var d = el("div", "num", '<span class="k">' + k + '</span><span class="v tnum ' +
+        (cls || (v === "—" ? "gap" : "")) + '">' + v + "</span>");
+      if (tip) d.title = tip;
+      nums.appendChild(d);
     }
-    n("Asking", l.askingPrice ? money(num(l.askingPrice)) : "—");
-    n("Revenue", r.revenue !== null ? money(r.revenue) : "—");
+    n("Asking", l.askingPrice ? money(num(l.askingPrice)) : "—", "", "The advertised asking price.");
+    n("Annual revenue", r.revenue !== null ? money(r.revenue) : "—", "",
+      "Total sales for ONE YEAR, before any costs are taken out. Not profit, and not a "
+      + "lifetime figure.");
     n("Return", r.outputs.returnPct !== null ? E.pct(r.outputs.returnPct) +
-      (r.requiredReturn ? " / " + E.pct(r.requiredReturn) + (r.confPenalty ? "*" : "") : "") : "—",
-      r.outputs.returnPct !== null && r.requiredReturn ? (r.outputs.returnPct >= r.requiredReturn ? "under" : "over") : "");
-    n("Eff. multiple", r.outputs.effectiveMultiple !== null ?
-      r.outputs.effectiveMultiple.toFixed(1) + "x / " + r.bandCfg.multipleCeiling.toFixed(1) + "x" : "—",
-      r.outputs.effectiveMultiple !== null && r.bandCfg ? (r.outputs.effectiveMultiple <= r.bandCfg.multipleCeiling ? "under" : "over") : "");
-    n("Payback", r.outputs.payback !== null ? r.outputs.payback.toFixed(1) + " yrs" : "—");
-    n("Max price", r.outputs.maxPrice !== null ? money(r.outputs.maxPrice) : "—");
+      (r.requiredReturn ? " (need " + E.pct(r.requiredReturn) + (r.confPenalty ? "*" : "") + ")" : "") : "—",
+      r.outputs.returnPct !== null && r.requiredReturn ? (r.outputs.returnPct >= r.requiredReturn ? "under" : "over") : "",
+      "What this deal returns each year on the money you put in, against what a business of "
+      + "this size should return given the risk. Green = beats the benchmark, red = falls short."
+      + (r.confPenalty ? " The * means the benchmark was raised by "
+          + E.pct(r.confPenalty) + " because the figures are unverified." : ""));
+    n("Earnings multiple", r.outputs.effectiveMultiple !== null ?
+      r.outputs.effectiveMultiple.toFixed(1) + "x (max " + r.bandCfg.multipleCeiling.toFixed(1) + "x)" : "—",
+      r.outputs.effectiveMultiple !== null && r.bandCfg ? (r.outputs.effectiveMultiple <= r.bandCfg.multipleCeiling ? "under" : "over") : "",
+      "How many years of earnings the asking price represents, once the owner's replacement "
+      + "is paid. 2.9x means the price equals 2.9 years of real earnings; the figure in "
+      + "brackets is the most you should sensibly pay. Brokers quote a lower number because "
+      + "they divide by the owner's earnings, which assumes you work there unpaid.");
+    n("Payback", r.outputs.payback !== null ? r.outputs.payback.toFixed(1) + " yrs" : "—", "",
+      "Years to get all your money back. Slightly longer than the earnings multiple because "
+      + "it counts the extra cash you need beyond the purchase price — working capital, legal "
+      + "and accounting fees, catch-up repairs.");
+    n("Max price", r.outputs.maxPrice !== null ? money(r.outputs.maxPrice) : "—", "",
+      "The most you could pay and still hit your target return. Compare with the asking price — "
+      + "the gap is your negotiating room, or your reason to walk away.");
     c.appendChild(nums);
 
     // --- licence line ---
@@ -1003,15 +1228,7 @@
     return c;
   }
 
-  function bestRoute(r) {
-    if (!r.routes) return null;
-    var opts = [];
-    if (r.routes.keep.cost !== null) opts.push({ label: "keep", cost: r.routes.keep.cost });
-    if (r.routes.hire.cost !== null) opts.push({ label: "hire", cost: r.routes.hire.cost });
-    if (opts.length === 0) return null;
-    opts.sort(function (a, b) { return a.cost - b.cost; });
-    return opts[0];
-  }
+  function bestRoute(r) { return r.bestRoute ? { label: r.bestRoute } : null; }
 
   function details(x) {
     var l = x.l, r = x.r, d = el("div", "listing-detail");
@@ -1020,19 +1237,28 @@
 
     // management routes
     if (r.routes) {
-      var s1 = el("div", "dsec", "<h4>Management routes — who runs it</h4>");
+      var s1 = el("div", "dsec", "<h4>Management routes — the headline follows the best one open to you</h4>");
       var t = el("table", "routes");
-      t.innerHTML = "<tr><th>Route</th><th>Annual cost</th><th>Earnings after</th><th>What it means</th></tr>";
-      [["keep", "Keep existing manager"], ["hire", "Hire a manager"], ["self", "Run it yourselves"]].forEach(function (p) {
-        var ro = r.routes[p[0]];
-        var after = (ro.cost !== null && r.profitPool !== null) ? (r.profitPool - ro.cost) * 0.9 : null;
-        var tr = document.createElement("tr");
-        if (ro.cost !== null && bestRoute(r) && p[0] === bestRoute(r).label) tr.className = "route-best";
-        tr.innerHTML = "<td>" + p[1] + '</td><td class="n">' + (ro.cost === null ? "—" : money(ro.cost)) +
-          '</td><td class="n">' + (after === null ? "—" : money(after)) +
-          '</td><td class="rnote">' + esc(ro.note) + "</td>";
-        t.appendChild(tr);
-      });
+      t.innerHTML = "<tr><th>Route</th><th>Annual cost</th><th>Earnings after</th><th>Return</th>" +
+                    "<th>Verdict</th><th>What it means</th></tr>";
+      [["keep", "Keep existing manager"], ["hire", "Hire a manager"], ["self", "Run it yourselves"]]
+        .forEach(function (p) {
+          var ro = r.routes[p[0]];
+          var tr = document.createElement("tr");
+          if (p[0] === r.bestRoute) tr.className = "route-best";
+          var avail = ro.viable && ro.cost !== null && ro.cost !== undefined;
+          var vw = { go: "Go", caution: "Investigate", walk: "Walk", unknown: "?" };
+          tr.innerHTML = "<td>" + p[1] + (p[0] === r.bestRoute ? " <b>&larr; headline</b>" : "") +
+            '</td><td class="n">' + (avail ? money(ro.cost) : "—") +
+            '</td><td class="n">' + (avail && ro.aie != null ? money(ro.aie) : "—") +
+            '</td><td class="n">' + (avail && ro.outputs && ro.outputs.returnPct != null
+                ? E.pct(ro.outputs.returnPct) : "—") +
+            '</td><td>' + (avail && ro.overall
+                ? '<span class="state-dot ' + ro.overall + '"></span>' + vw[ro.overall]
+                : '<span class="chip">not available</span>') +
+            '</td><td class="rnote">' + esc(ro.note) + "</td>";
+          t.appendChild(tr);
+        });
       s1.appendChild(t);
       d.appendChild(s1);
 
@@ -1427,6 +1653,15 @@
   document.getElementById("btnRefresh").addEventListener("click", fetchListings);
   document.getElementById("btnAdd").addEventListener("click", function () { openModal(null); });
   document.getElementById("btnAddEmpty").addEventListener("click", function () { if (configured()) openModal(null); });
+
+  // ---- guide: open on first visit, remember the choice thereafter ----
+  var guide = document.getElementById("guide");
+  if (guide) {
+    if (localStorage.getItem("muster_guide_closed") === "1") guide.open = false;
+    guide.addEventListener("toggle", function () {
+      localStorage.setItem("muster_guide_closed", guide.open ? "0" : "1");
+    });
+  }
 
   // ---- init ----
   renderBanner();
